@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset=" utf-8"/>
+        <title>SkyBound - Your Journey Begins Here</title>
+        
+        <!-- Link to our normal CSS file -->
+        <link rel="stylesheet" href="assets/css/styles.css">
+
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+        <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet"/>
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    </head>
+    <body>
+        <!-- BEGIN: MainHeader -->
+        <header class="site-header" data-purpose="site-header">
+            <nav aria-label="Top" class="container">
+                <div class="nav-wrapper">
+                    <!-- Logo -->
+                    <div class="logo-container">
+                        <a class="logo-link" href="#">
+                            <svg class="logo-icon" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M21 16.5c0 .38-.21.71-.53.88l-7.97 4.13a1.503 1.503 0 01-1.5 0l-7.97-4.13c-.32-.17-.53-.5-.53-.88V7.5c0-.38.21-.71.53-.88l7.97-4.13a1.503 1.503 0 011.5 0l7.97 4.13c.32.17.53.5.53.88v9z"></path>
+                            </svg>
+                            <span class="logo-text">SkyBound</span>
+                        </a>
+                    </div>
+
+                    <!-- Navigation Links -->
+                    <div class="desktop-nav">
+                        <a class="nav-link" href="#">Home</a>
+                        <a class="nav-link" href="#">Flights</a>
+                        <a class="nav-link" href="#">Contact</a>
+                    </div>
+
+                    <!-- Mobile Menu Placeholder (Simplified) -->
+                    <div class="mobile-menu-container">
+                        <button class="mobile-menu-btn" data-purpose="mobile-menu-toggle" type="button">
+                            <span class="sr-only">Open menu</span>
+                            <svg style="height: 1.5rem; width: 1.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path d="M4 6h16M4 12h16m-7 6h7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </nav>
+        </header>
+        <!-- END: MainHeader -->
+
+        <main>
+            <!-- BEGIN: HeroSection -->
+            <section class="hero-section" data-purpose="hero-banner">
+                <div class="hero-bg">
+                    <img alt="SkyBound Airplane in Flight" class="hero-image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiVFDYJOA7EGPEppxPGcB8AI9hLT3PjSrAkcX3MGkoXpzJgTf2Cks07D7sXTmy4IOu1X-hstHZM6CPw5VGTtwfMLjRtyI0OD63-OE3HYCOnrgA4KJ1FbYd1h9c-ZQUp7vRARZygupKVsp-xI6yKk5UmbuVro_sOejYxi_6AeTjbP43v7vnjuxnXnCWWdFWkFUpidxukp5Ab8xPFZdGj6f9kVjCBGXohDxRecp2LFK1iAlYwzInSWQEw6D69pLU3DA8uAeCJQai4RA"/>
+                    <div class="hero-overlay"></div>
+                </div>
+
+                <div class="hero-content container">
+                    <div class="hero-title-wrapper">
+                        <h1 class="hero-title">Where your journey begins</h1>
+                        <p class="hero-subtitle">Find the best flights to your favorite destinations.</p>
+                    </div>
+
+                    <!-- BEGIN: SearchForm -->
+                    <div class="search-form-container" data-purpose="flight-search-container">
+                        <form class="search-form" id="flight-search-form">
+                            <div class="trip-type-toggles">
+                                <label class="radio-label">
+                                    <input checked class="radio-input" id="type-round-trip" name="trip-type" type="radio" value="round-trip"/>
+                                    <span class="radio-text">Round-trip</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input class="radio-input" id="type-one-way" name="trip-type" type="radio" value="one-way"/>
+                                    <span class="radio-text">One-way</span>
+                                </label>
+                            </div>
+
+                            <div class="search-fields-row">
+                                <div class="field-group autocomplete-wrapper">
+                                    <label class="field-label" for="from-display">From</label>
+                                    <input class="search-input" id="from-display" placeholder="City or Airport" required type="text" autocomplete="off"/>
+                                    <input type="hidden" id="from-code" name="from_code" required/>
+                                    <div id="from-autocomplete" class="autocomplete-dropdown"></div>
+                                </div>
+
+                                <div class="field-group autocomplete-wrapper">
+                                    <label class="field-label" for="to-display">To</label>
+                                    <input class="search-input" id="to-display" placeholder="City or Airport" required type="text" autocomplete="off"/>
+                                    <input type="hidden" id="to-code" name="to_code" required/>
+                                    <div id="to-autocomplete" class="autocomplete-dropdown"></div>
+                                </div>
+
+                                <div class="field-group field-group-large">
+                                    <label class="field-label" for="travel-dates">Travel Dates</label>
+                                    <div class="input-with-icon">
+                                        <input class="search-input" id="travel-dates" placeholder="Departure - Return" readonly required type="text"/>
+                                        <input type="hidden" id="outbound-date" name="outbound_date" />
+                                        <input type="hidden" id="return-date" name="return_date" />
+                                        <span class="material-symbols-outlined input-icon">calendar_month</span>
+                                    </div>
+                                </div>
+
+                                <div class="field-group travelers-wrapper">
+                                    <label class="field-label">Travelers</label>
+                                    <button class="search-input travelers-btn" id="travelers-btn" type="button">
+                                        <span id="travelers-summaryText">1 Adult</span>
+                                        <span class="material-symbols-outlined" style="color: #9CA3AF; font-size: 0.875rem;">keyboard_arrow_down</span>
+                                    </button>
+
+                                    <div aria-hidden="true" class="travelers-dropdown" id="travelers-dropdown">
+                                        <div class="travelers-dropdown-content">
+                                            <div class="traveler-type">
+                                                <div>
+                                                    <p class="traveler-name">Adult</p>
+                                                    <p class="traveler-age">Age 18+</p>
+                                                </div>
+                                                <div class="traveler-controls">
+                                                    <button class="traveler-btn" onclick="changeCount('adults', -1)" type="button">—</button>
+                                                    <span class="traveler-count" id="adults-count">1</span>
+                                                    <input id="adults-input" name="adults" type="hidden" value="1"/>
+                                                    <button class="traveler-btn plus" onclick="changeCount('adults', 1)" type="button">+</button>
+                                                </div>
+                                            </div>
+                                            <div class="traveler-type">
+                                                <div>
+                                                    <p class="traveler-name">Children</p>
+                                                    <p class="traveler-age">Age 0–17</p>
+                                                </div>
+                                                <div class="traveler-controls">
+                                                    <button class="traveler-btn" onclick="changeCount('children', -1)" type="button">—</button>
+                                                    <span class="traveler-count" id="children-count">0</span>
+                                                    <input id="children-input" name="children" type="hidden" value="0"/>
+                                                    <button class="traveler-btn plus" onclick="changeCount('children', 1)" type="button">+</button>
+                                                </div>
+                                            </div>
+                                            <div id="child-ages-container" style="display: none; margin-top: 0.5rem;">
+                                                <p style="font-size: 0.75rem; font-weight: 700; color: #374151; margin-bottom: 0.5rem;">Child Ages</p>
+                                                <div id="child-ages-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+                                            </div>
+                                        </div>
+                                        <div class="travelers-footer">
+                                            <button class="btn-done" id="travelers-done" type="button">Done</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="field-group">
+                                    <label class="field-label" for="cabin-class">Class</label>
+                                    <select class="search-input" id="cabin-class" name="cabin-class" required>
+                                        <option value="economy">Economy</option>
+                                        <option value="premium-economy">Premium</option>
+                                        <option value="business">Business</option>
+                                        <option value="first">First</option>
+                                    </select>
+                                </div>
+
+                                <div class="search-btn-wrapper">
+                                    <button class="btn-search" type="submit">Search</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- END: SearchForm -->
+                </div>
+            </section>
+
+            <!-- BEGIN: TrustSignals -->
+            <section class="features-section" data-purpose="features-section">
+                <div class="container">
+                    <div class="features-grid">
+                        <div class="feature-item">
+                            <div class="feature-icon-wrapper">
+                                <svg class="feature-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                                    <path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                            </div>
+                            <h3 class="feature-title">Easy Booking</h3>
+                            <p class="feature-desc">Secure your seat in just a few clicks.</p>
+                        </div>
+
+                        <div class="feature-item">
+                            <div class="feature-icon-wrapper">
+                                <svg class="feature-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                                    <path d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                            </div>
+                            <h3 class="feature-title">Best Prices</h3>
+                            <p class="feature-desc">Competitive rates for all your travel needs.</p>
+                        </div>
+
+                        <div class="feature-item">
+                            <div class="feature-icon-wrapper">
+                                <svg class="feature-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                                    <path d="M2.25 12.75V12A9.75 9.75 0 0112 2.25h.75a9.75 9.75 0 019.75 9.75v.75a9.75 9.75 0 01-9.75 9.75H12a9.75 9.75 0 01-9.75-9.75z" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                            </div>
+                            <h3 class="feature-title">24/7 Support</h3>
+                            <p class="feature-desc">We are here to help you around the clock.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- END: TrustSignals -->
+        </main>
+
+        <!-- BEGIN: Footer -->
+        <footer class="site-footer" data-purpose="site-footer">
+            <div class="container footer-container">
+                <div class="footer-links">
+                    <span class="footer-link">Privacy Policy</span>
+                    <span class="footer-link">Terms of Service</span>
+                </div>
+                <div class="footer-copyright-wrapper">
+                    <p class="footer-copyright">
+                        © 2023 SkyBound Airline Systems. All rights reserved.
+                    </p>
+                </div>
+            </div>
+        </footer>
+        <!-- END: Footer -->
+
+        <script data-purpose="form-interactivity">
+            // --- 1. Autocomplete Logic for Airports ---
+            const airports = [
+                { code: 'JFK', name: 'New York (JFK)' },
+                { code: 'LHR', name: 'London Heathrow (LHR)' },
+                { code: 'DXB', name: 'Dubai (DXB)' },
+                { code: 'CDG', name: 'Paris Charles de Gaulle (CDG)' },
+                { code: 'JED', name: 'Jeddah (JED)' },
+                { code: 'RUH', name: 'Riyadh (RUH)' },
+                { code: 'LAX', name: 'Los Angeles (LAX)' },
+                { code: 'NRT', name: 'Tokyo Narita (NRT)' },
+                { code: 'SIN', name: 'Singapore (SIN)' },
+                { code: 'SYD', name: 'Sydney (SYD)' },
+                { code: 'YYZ', name: 'Toronto (YYZ)' },
+                { code: 'FRA', name: 'Frankfurt (FRA)' },
+                { code: 'MAD', name: 'Madrid (MAD)' }
+            ];
+
+            function setupAutocomplete(displayId, codeId, dropdownId) {
+                const displayInput = document.getElementById(displayId);
+                const codeInput = document.getElementById(codeId);
+                const dropdown = document.getElementById(dropdownId);
+
+                displayInput.addEventListener('input', function() {
+                    const val = this.value.toLowerCase();
+                    dropdown.innerHTML = '';
+                    if (!val) {
+                        dropdown.classList.remove('active');
+                        codeInput.value = '';
+                        return;
+                    }
+
+                    const matches = airports.filter(a => 
+                        a.code.toLowerCase().includes(val) || a.name.toLowerCase().includes(val)
+                    );
+
+                    if (matches.length > 0) {
+                        dropdown.classList.add('active');
+                        matches.forEach(match => {
+                            const item = document.createElement('div');
+                            item.className = 'autocomplete-item';
+                            item.innerHTML = `<span class="autocomplete-code">${match.code}</span> <span>${match.name}</span>`;
+                            item.addEventListener('click', function() {
+                                displayInput.value = match.name;
+                                codeInput.value = match.code;
+                                dropdown.classList.remove('active');
+                            });
+                            dropdown.appendChild(item);
+                        });
+                    } else {
+                        dropdown.classList.remove('active');
+                    }
+                });
+
+                // Close when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (e.target !== displayInput && e.target !== dropdown) {
+                        dropdown.classList.remove('active');
+                        // Force valid code selection
+                        if (displayInput.value && !codeInput.value) {
+                            displayInput.value = ''; // clear if they didn't pick from list
+                        }
+                    }
+                });
+            }
+
+            setupAutocomplete('from-display', 'from-code', 'from-autocomplete');
+            setupAutocomplete('to-display', 'to-code', 'to-autocomplete');
+
+            // --- 2. Date Picker and Trip Type ---
+            let fp = flatpickr("#travel-dates", {
+                mode: "range",
+                dateFormat: "Y-m-d",
+                minDate: "today",
+                altInput: true,
+                altFormat: "F j, Y",
+                showMonths: 2
+            });
+
+            const tripTypeRadios = document.getElementsByName('trip-type');
+            tripTypeRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    if (e.target.value === 'one-way') {
+                        fp.set('mode', 'single');
+                        document.getElementById('travel-dates').placeholder = 'Departure';
+                        if (fp.altInput) fp.altInput.placeholder = 'Departure';
+                    } else {
+                        fp.set('mode', 'range');
+                        document.getElementById('travel-dates').placeholder = 'Departure - Return';
+                        if (fp.altInput) fp.altInput.placeholder = 'Departure - Return';
+                    }
+                    fp.clear();
+                });
+            });
+
+            // --- 3. Travelers Logic & Child Ages ---
+            const travelersBtn = document.getElementById('travelers-btn');
+            const travelersDropdown = document.getElementById('travelers-dropdown');
+            const travelersDone = document.getElementById('travelers-done');
+            const summaryText = document.getElementById('travelers-summaryText');
+            const childAgesContainer = document.getElementById('child-ages-container');
+            const childAgesList = document.getElementById('child-ages-list');
+
+            travelersBtn.addEventListener('click', () => {
+                const isHidden = travelersDropdown.getAttribute('aria-hidden') === 'true';
+                travelersDropdown.setAttribute('aria-hidden', !isHidden);
+            });
+
+            travelersDone.addEventListener('click', () => {
+                travelersDropdown.setAttribute('aria-hidden', 'true');
+            });
+
+            window.addEventListener('click', (e) => {
+                if (!travelersBtn.contains(e.target) && !travelersDropdown.contains(e.target)) {
+                    travelersDropdown.setAttribute('aria-hidden', 'true');
+                }
+            });
+
+            function changeCount(type, delta) {
+                const display = document.getElementById(type + '-count');
+                const input = document.getElementById(type + '-input');
+                let current = parseInt(display.innerText);
+                
+                let min = type === 'adults' ? 1 : 0;
+                let newVal = Math.max(min, current + delta);
+                
+                display.innerText = newVal;
+                input.value = newVal;
+                
+                if (type === 'children') {
+                    renderChildAges(newVal);
+                }
+                updateSummary();
+            }
+
+            function renderChildAges(count) {
+                if (count === 0) {
+                    childAgesContainer.style.display = 'none';
+                    childAgesList.innerHTML = '';
+                    return;
+                }
+                
+                childAgesContainer.style.display = 'block';
+                
+                // Retain existing values when adding/removing safely
+                const existingSelects = childAgesList.querySelectorAll('select');
+                const existingValues = Array.from(existingSelects).map(s => s.value);
+                
+                let html = '';
+                for (let i = 0; i < count; i++) {
+                    const val = existingValues[i] || '0';
+                    let options = '';
+                    for (let j = 0; j <= 17; j++) {
+                        options += `<option value="${j}" ${val == j ? 'selected' : ''}>${j}</option>`;
+                    }
+                    html += `
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <label style="font-size: 0.75rem; color: #4B5563;">Child ${i + 1} Age</label>
+                            <select name="child_ages[]" required style="border: 1px solid #D1D5DB; border-radius: 0.25rem; padding: 0.25rem; font-size: 0.875rem; background: #fff;">
+                                ${options}
+                            </select>
+                        </div>
+                    `;
+                }
+                childAgesList.innerHTML = html;
+            }
+
+            function updateSummary() {
+                const adults = parseInt(document.getElementById('adults-count').innerText);
+                const children = parseInt(document.getElementById('children-count').innerText);
+                let text = `${adults} Adult${adults > 1 ? 's' : ''}`;
+                if (children > 0) {
+                    text += `, ${children} Child${children > 1 ? 'ren' : ''}`;
+                }
+                summaryText.innerText = text;
+            }
+
+            // --- 4. Form Submission Parsing ---
+            document.getElementById('flight-search-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Collect Base data
+                const tripType = document.querySelector('input[name="trip-type"]:checked').value;
+                const fromCode = document.getElementById('from-code').value;
+                const toCode = document.getElementById('to-code').value;
+                const cabinClass = document.getElementById('cabin-class').value;
+                const rawDates = document.getElementById('travel-dates').value; // e.g., "2026-11-05 to 2026-11-15"
+                
+                // Ensure inputs are strictly set
+                if (!fromCode || !toCode) {
+                    alert("Please select a valid airport from the dropdown list.");
+                    return;
+                }
+
+                if (!rawDates) {
+                    alert("Please select travel dates.");
+                    return;
+                }
+
+                // Split Dates logic
+                let outboundDate = '';
+                let returnDate = '';
+                if (tripType === 'one-way') {
+                    outboundDate = rawDates;
+                } else {
+                    const splitDates = rawDates.split(' to ');
+                    outboundDate = splitDates[0] || '';
+                    returnDate = splitDates[1] || '';
+                }
+                document.getElementById('outbound-date').value = outboundDate;
+                document.getElementById('return-date').value = returnDate;
+
+                // Build Slices Array for Duffel API mock
+                const slices = [];
+                if (outboundDate) {
+                    slices.push({ origin: fromCode, destination: toCode, departure_date: outboundDate });
+                }
+                if (tripType === 'round-trip' && returnDate) {
+                    slices.push({ origin: toCode, destination: fromCode, departure_date: returnDate });
+                }
+
+                // Build passenger Array logic
+                const passengers = [];
+                const adultCount = parseInt(document.getElementById('adults-input').value);
+                for(let i = 0; i < adultCount; i++) {
+                    passengers.push({ type: 'adult' });
+                }
+
+                const childSelects = document.querySelectorAll('select[name="child_ages[]"]');
+                childSelects.forEach(select => {
+                    passengers.push({ type: 'child', age: parseInt(select.value) });
+                });
+
+                // Simulate the final JSON Payload
+                const payload = {
+                    slices: slices,
+                    passengers: passengers,
+                    cabin_class: cabinClass
+                };
+                
+                fetch('api/search_flights.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Success from PHP:", data);
+                    // Here is where I will eventually write code to hide the form 
+                    // and render the flight results on the screen.
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    alert("Failed to fetch flights. Check the console.");
+                });
+            });
+        </script>
+    </body>
+</html>
