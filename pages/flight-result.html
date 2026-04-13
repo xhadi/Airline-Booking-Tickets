@@ -4,8 +4,10 @@
     <meta charset="utf-8"/>
     <title>Flight Results - SkyBound</title>
     
-    <!-- Link to our CSS file relative to the pages folder -->
-    <link rel="stylesheet" href="../assets/css/styles.css">
+    <!-- Common styles -->
+    <link rel="stylesheet" href="../assets/css/common.css">
+    <!-- Page-specific styles -->
+    <link rel="stylesheet" href="../assets/css/flight-results.css">
 
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
     <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet"/>
@@ -471,10 +473,20 @@
                             <span class="price-val">${offer.total_amount}</span>
                             <span class="price-currency">${offer.total_currency}</span>
                         </div>
-                        <button class="btn-select" onclick="alert('Selected offer: ${offer.offer_id}')">Select</button>
+                        <button class="btn-select" onclick="selectFlight('${offer.offer_id}')">Select</button>
                     </div>
                 </div>
             `;
+        }
+
+        function selectFlight(offerId) {
+            const selectedOffer = searchResults.find(o => o.offer_id === offerId);
+            if (selectedOffer) {
+                const passengers = JSON.parse(localStorage.getItem('searchPassengers')) || [{ type: 'adult' }];
+                selectedOffer.passengers = passengers.length;
+                localStorage.setItem('selectedFlight', JSON.stringify(selectedOffer));
+                window.location.href = 'booking.html';
+            }
         }
 
         function renderFlights() {

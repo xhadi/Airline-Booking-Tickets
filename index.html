@@ -4,8 +4,10 @@
         <meta charset=" utf-8"/>
         <title>SkyBound - Your Journey Begins Here</title>
         
-        <!-- Link to our normal CSS file -->
-        <link rel="stylesheet" href="assets/css/styles.css">
+        <!-- Common styles -->
+        <link rel="stylesheet" href="assets/css/common.css">
+        <!-- Page-specific styles -->
+        <link rel="stylesheet" href="assets/css/home.css">
 
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
         <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet"/>
@@ -471,8 +473,8 @@
                 .then(response => response.json())
                 .then(data => {
                     console.log("Success from PHP:", data);
-                    // Here is where I will eventually write code to hide the form 
-                    // and render the flight results on the screen.
+                    localStorage.setItem('searchPassengers', JSON.stringify(passengers));
+                    window.location.href = 'pages/flight-result.html';
                 })
                 .catch((error) => {
                     console.error('Error:', error);
