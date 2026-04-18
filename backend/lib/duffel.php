@@ -22,7 +22,7 @@ class DuffelAPI {
         
         $headers = [
             'Authorization: Bearer ' . $this->apiKey,
-            'Duffel-Version: beta',
+            'Duffel-Version: v2',
             'Accept: application/json'
         ];
 

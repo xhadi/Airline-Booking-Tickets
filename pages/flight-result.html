@@ -364,20 +364,77 @@
         document.getElementById('flight-search-form').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // Just simulate a search update visually
             const btn = document.querySelector('.btn-search');
             const ogText = btn.innerText;
             btn.innerText = "Processing...";
+
+            // Collect Base data
+            const tripType = document.querySelector('input[name="trip-type"]:checked').value;
+            const fromCode = document.getElementById('from-code').value;
+            const toCode = document.getElementById('to-code').value;
+            const cabinClass = document.getElementById('cabin-class').value;
+            const rawDates = document.getElementById('travel-dates').value;
             
-            setTimeout(() => {
-                btn.innerText = "Updated";
-                setTimeout(() => { btn.innerText = ogText; }, 1500);
-                
-                // For demonstration, we just update the title
-                const fromCode = document.getElementById('from-code').value || 'JED';
-                const toCode = document.getElementById('to-code').value || 'RUH';
-                document.querySelector('.results-title').innerText = `Flights from ${fromCode} to ${toCode}`;
-            }, 800);
+            // Ensure inputs are strictly set
+            if (!fromCode || !toCode) {
+                alert("Please select a valid airport from the dropdown list.");
+                btn.innerText = ogText;
+                return;
+            }
+
+            if (!rawDates) {
+                alert("Please select travel dates.");
+                btn.innerText = ogText;
+                return;
+            }
+
+            // Split Dates logic
+            let outboundDate = '';
+            let returnDate = '';
+            if (tripType === 'one-way') {
+                outboundDate = rawDates;
+            } else {
+                const splitDates = rawDates.split(' to ');
+                outboundDate = splitDates[0] || '';
+                returnDate = splitDates[1] || '';
+            }
+            document.getElementById('outbound-date').value = outboundDate;
+            document.getElementById('return-date').value = returnDate;
+
+            // Build Slices Array for Duffel API
+            const slices = [];
+            if (outboundDate) {
+                slices.push({ origin: fromCode, destination: toCode, departure_date: outboundDate });
+            }
+            if (tripType === 'round-trip' && returnDate) {
+                slices.push({ origin: toCode, destination: fromCode, departure_date: returnDate });
+            }
+
+            // Build passenger Array logic
+            const passengers = [];
+            const adultCount = parseInt(document.getElementById('adults-input').value);
+            for(let i = 0; i < adultCount; i++) {
+                passengers.push({ type: 'adult' });
+            }
+
+            const childSelects = document.querySelectorAll('select[name="child_ages[]"]');
+            childSelects.forEach(select => {
+                passengers.push({ type: 'child', age: parseInt(select.value) });
+            });
+
+            // Simulate the final JSON Payload
+            const payload = {
+                slices: slices,
+                passengers: passengers,
+                cabin_class: cabinClass
+            };
+            
+            // Store in local storage
+            localStorage.setItem('flightSearchParams', JSON.stringify(payload));
+            
+            // Trigger new search and reset button
+            fetchFlights();
+            setTimeout(() => { btn.innerText = ogText; }, 800);
         });
 
         // --- 5. Flight Results Rendering logic ---
@@ -513,6 +570,96 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
+            // Load and populate search bar based on localStorage
+            const payloadRaw = localStorage.getItem('flightSearchParams');
+            if (payloadRaw) {
+                try {
+                    const payload = JSON.parse(payloadRaw);
+                    
+                    // 1. Trip Type
+                    if (payload.slices && payload.slices.length === 1) {
+                        document.getElementById('type-one-way').checked = true;
+                        fp.set('mode', 'single');
+                        document.getElementById('travel-dates').placeholder = 'Departure';
+                        if (fp.altInput) fp.altInput.placeholder = 'Departure';
+                    } else if (payload.slices && payload.slices.length === 2) {
+                        document.getElementById('type-round-trip').checked = true;
+                        fp.set('mode', 'range');
+                        document.getElementById('travel-dates').placeholder = 'Departure - Return';
+                        if (fp.altInput) fp.altInput.placeholder = 'Departure - Return';
+                    }
+
+                    // 2. From / To
+                    if (payload.slices && payload.slices.length > 0) {
+                        const originCode = payload.slices[0].origin;
+                        const destCode = payload.slices[0].destination;
+                        
+                        const originMatch = airports.find(a => a.code === originCode);
+                        if (originMatch) {
+                            document.getElementById('from-display').value = originMatch.name;
+                            document.getElementById('from-code').value = originCode;
+                        } else {
+                            document.getElementById('from-display').value = originCode;
+                            document.getElementById('from-code').value = originCode;
+                        }
+
+                        const destMatch = airports.find(a => a.code === destCode);
+                        if (destMatch) {
+                            document.getElementById('to-display').value = destMatch.name;
+                            document.getElementById('to-code').value = destCode;
+                        } else {
+                            document.getElementById('to-display').value = destCode;
+                            document.getElementById('to-code').value = destCode;
+                        }
+
+                        // 3. Travel Dates
+                        let dates = [payload.slices[0].departure_date];
+                        document.getElementById('outbound-date').value = dates[0];
+                        if (payload.slices.length === 2 && payload.slices[1].departure_date) {
+                            dates.push(payload.slices[1].departure_date);
+                            document.getElementById('return-date').value = dates[1];
+                        }
+                        fp.setDate(dates);
+                    }
+
+                    // 4. Travelers
+                    if (payload.passengers && payload.passengers.length > 0) {
+                        const adults = payload.passengers.filter(p => p.type === 'adult').length;
+                        const children = payload.passengers.filter(p => p.type === 'child');
+                        
+                        document.getElementById('adults-count').innerText = adults;
+                        document.getElementById('adults-input').value = adults;
+                        
+                        document.getElementById('children-count').innerText = children.length;
+                        document.getElementById('children-input').value = children.length;
+
+                        if (children.length > 0) {
+                            renderChildAges(children.length);
+                            // Set the ages in the dropdowns
+                            setTimeout(() => {
+                                const selects = document.querySelectorAll('select[name="child_ages[]"]');
+                                children.forEach((child, index) => {
+                                    if (selects[index]) {
+                                        selects[index].value = child.age || 0;
+                                    }
+                                });
+                            }, 0);
+                        } else {
+                            renderChildAges(0);
+                        }
+                        updateSummary();
+                    }
+
+                    // 5. Cabin Class
+                    if (payload.cabin_class) {
+                        document.getElementById('cabin-class').value = payload.cabin_class;
+                    }
+
+                } catch (e) {
+                    console.error("Error parsing search params for form:", e);
+                }
+            }
+
             fetchFlights();
         });
     </script>
