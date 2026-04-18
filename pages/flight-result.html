@@ -381,49 +381,10 @@
         });
 
         // --- 5. Flight Results Rendering logic ---
-        const searchResults = [
-            {
-                "offer_id": "off_0000A3b4_1",
-                "total_amount": "450.00",
-                "total_currency": "SAR",
-                "airline_name": "Saudia",
-                "outbound": {
-                    "departure_iata": "JED",
-                    "departure_time": "2026-11-05T08:00:00",
-                    "arrival_iata": "RUH",
-                    "arrival_time": "2026-11-05T09:30:00",
-                    "duration": "PT1H30M"
-                }
-            },
-            {
-                "offer_id": "off_0000A3b4_2",
-                "total_amount": "380.00",
-                "total_currency": "SAR",
-                "airline_name": "Flynas",
-                "outbound": {
-                    "departure_iata": "JED",
-                    "departure_time": "2026-11-05T14:15:00",
-                    "arrival_iata": "RUH",
-                    "arrival_time": "2026-11-05T15:55:00",
-                    "duration": "PT1H40M"
-                }
-            },
-            {
-                "offer_id": "off_0000A3b4_3",
-                "total_amount": "520.00",
-                "total_currency": "SAR",
-                "airline_name": "Saudia",
-                "outbound": {
-                    "departure_iata": "JED",
-                    "departure_time": "2026-11-05T20:30:00",
-                    "arrival_iata": "RUH",
-                    "arrival_time": "2026-11-05T22:00:00",
-                    "duration": "PT1H30M"
-                }
-            }
-        ];
+        let currentFlights = [];
 
         function formatDuration(pt) {
+            if (!pt) return '';
             let result = '';
             const hoursMatch = pt.match(/(\d+)H/);
             const minutesMatch = pt.match(/(\d+)M/);
@@ -438,69 +399,121 @@
             return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
         }
 
-        function createFlightCardHTML(offer) {
-            const out = offer.outbound;
-            const airlineInitial = offer.airline_name.charAt(0).toUpperCase();
+        function createFlightCardHTML(flight) {
+            // Support multi-segment slices by getting the first departure and last arrival of the first slice
+            const slice = flight.slices[0];
+            const firstSegment = slice.segments[0];
+            const lastSegment = slice.segments[slice.segments.length - 1];
+            
+            const airlineName = firstSegment.carrier_name || firstSegment.carrier_code || 'Airline';
+            const airlineInitial = airlineName.charAt(0).toUpperCase();
+            
+            const stops = slice.segments.length - 1;
+            const stopsText = stops === 0 ? 'Direct' : `${stops} Stop${stops > 1 ? 's' : ''}`;
 
             return `
                 <div class="flight-card">
                     <div class="flight-info-container">
                         <div class="flight-airline-sec">
                             <div class="airline-logo-placeholder">${airlineInitial}</div>
-                            <span class="airline-name">${offer.airline_name}</span>
+                            <span class="airline-name">${airlineName}</span>
+                            <span class="flight-stops" style="display:block; font-size:0.75rem; color:#6B7280; margin-top:4px;">${stopsText}</span>
                         </div>
                         
                         <div class="flight-times-sec">
                             <div class="time-box">
-                                <div class="time-val">${formatTime(out.departure_time)}</div>
-                                <div class="time-iata">${out.departure_iata}</div>
+                                <div class="time-val">${formatTime(firstSegment.departure_time)}</div>
+                                <div class="time-iata">${firstSegment.origin}</div>
                             </div>
                             
                             <div class="flight-duration-box">
-                                <div class="duration-val">${formatDuration(out.duration)}</div>
+                                <div class="duration-val">${formatDuration(slice.duration)}</div>
                                 <div class="duration-line"></div>
                             </div>
                             
                             <div class="time-box">
-                                <div class="time-val">${formatTime(out.arrival_time)}</div>
-                                <div class="time-iata">${out.arrival_iata}</div>
+                                <div class="time-val">${formatTime(lastSegment.arrival_time)}</div>
+                                <div class="time-iata">${lastSegment.destination}</div>
                             </div>
                         </div>
                     </div>
                     
                     <div class="flight-price-sec">
                         <div>
-                            <span class="price-val">${offer.total_amount}</span>
-                            <span class="price-currency">${offer.total_currency}</span>
+                            <span class="price-val">${flight.price.total}</span>
+                            <span class="price-currency">${flight.price.currency}</span>
                         </div>
-                        <button class="btn-select" onclick="selectFlight('${offer.offer_id}')">Select</button>
+                        <button class="btn-select" onclick="selectFlight('${flight.id}')">Select</button>
                     </div>
                 </div>
             `;
         }
 
-        function selectFlight(offerId) {
-            const selectedOffer = searchResults.find(o => o.offer_id === offerId);
-            if (selectedOffer) {
-                const passengers = JSON.parse(localStorage.getItem('searchPassengers')) || [{ type: 'adult' }];
-                selectedOffer.passengers = passengers.length;
-                localStorage.setItem('selectedFlight', JSON.stringify(selectedOffer));
+        function selectFlight(flightId) {
+            const selectedFlight = currentFlights.find(f => f.id === flightId);
+            if (selectedFlight) {
+                // Pass passengers info from the stored search params
+                const searchParams = JSON.parse(localStorage.getItem('flightSearchParams') || '{}');
+                selectedFlight.passengers = searchParams.passengers ? searchParams.passengers.length : 1;
+                localStorage.setItem('selectedFlight', JSON.stringify(selectedFlight));
                 window.location.href = 'booking.html';
             }
         }
 
-        function renderFlights() {
+        function fetchFlights() {
             const container = document.getElementById('flight-cards-container');
             const countText = document.getElementById('results-count-text');
             
-            countText.innerText = `Found ${searchResults.length} flights`;
-            
-            const html = searchResults.map(offer => createFlightCardHTML(offer)).join('');
-            container.innerHTML = html;
+            container.innerHTML = '<div style="text-align:center; padding: 2rem; color: #6B7280;">Searching flights... Please wait.</div>';
+            countText.innerText = 'Searching...';
+
+            const payloadRaw = localStorage.getItem('flightSearchParams');
+            if (!payloadRaw) {
+                container.innerHTML = '<div style="text-align:center; padding: 2rem; color: #EF4444;">No search parameters found. Please go back and try again.</div>';
+                countText.innerText = 'Error';
+                return;
+            }
+
+            const payload = JSON.parse(payloadRaw);
+
+            // Update title dynamically if we can infer origin and dest from the first slice
+            if (payload.slices && payload.slices.length > 0) {
+                document.querySelector('.results-title').innerText = `Flights from ${payload.slices[0].origin} to ${payload.slices[0].destination}`;
+            }
+
+            fetch('../backend/api/search_flights.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                currentFlights = data.flights || [];
+                countText.innerText = `Found ${currentFlights.length} flights`;
+                
+                if (currentFlights.length === 0) {
+                    container.innerHTML = '<div style="text-align:center; padding: 2rem; color: #6B7280;">No flights found for this route and date.</div>';
+                    return;
+                }
+
+                container.innerHTML = currentFlights.map(flight => createFlightCardHTML(flight)).join('');
+            })
+            .catch(error => {
+                console.error("Fetch error:", error);
+                container.innerHTML = `<div style="text-align:center; padding: 2rem; color: #EF4444;">Failed to fetch flights: ${error.message}</div>`;
+                countText.innerText = 'Error';
+            });
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            renderFlights();
+            fetchFlights();
         });
     </script>
 </body>

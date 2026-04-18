@@ -455,31 +455,16 @@
                     passengers.push({ type: 'child', age: parseInt(select.value) });
                 });
 
-                // Simulate the final JSON Payload
+                // Simulate the final JSON Payload (Instead of POSTing, redirect with payload)
                 const payload = {
                     slices: slices,
                     passengers: passengers,
                     cabin_class: cabinClass
                 };
                 
-                fetch('api/search_flights.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Success from PHP:", data);
-                    localStorage.setItem('searchPassengers', JSON.stringify(passengers));
-                    window.location.href = 'pages/flight-result.html';
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
-                    alert("Failed to fetch flights. Check the console.");
-                });
+                // Store in local storage to easily retrieve on the next page
+                localStorage.setItem('flightSearchParams', JSON.stringify(payload));
+                window.location.href = 'pages/flight-result.html';
             });
         </script>
     </body>
