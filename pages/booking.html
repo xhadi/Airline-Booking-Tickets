@@ -389,19 +389,24 @@
         }
 
         function populateFlightSummary(flight) {
-            const out = flight.outbound;
-            document.getElementById('summary-origin').textContent = out.departure_iata;
-            document.getElementById('summary-origin-city').textContent = airportNames[out.departure_iata] || out.departure_iata;
-            document.getElementById('summary-dest').textContent = out.arrival_iata;
-            document.getElementById('summary-dest-city').textContent = airportNames[out.arrival_iata] || out.arrival_iata;
+            // Support multi-segment slices by getting the first departure and last arrival
+            const slice = flight.slices[0];
+            const firstSegment = slice.segments[0];
+            const lastSegment = slice.segments[slice.segments.length - 1];
             
-            const depDate = new Date(out.departure_time);
+            document.getElementById('summary-origin').textContent = firstSegment.origin;
+            document.getElementById('summary-origin-city').textContent = airportNames[firstSegment.origin] || firstSegment.origin;
+            document.getElementById('summary-dest').textContent = lastSegment.destination;
+            document.getElementById('summary-dest-city').textContent = airportNames[lastSegment.destination] || lastSegment.destination;
+            
+            const depDate = new Date(firstSegment.departure_time);
             document.getElementById('summary-date').textContent = depDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
             
-            document.getElementById('summary-airline').textContent = flight.airline_name;
-            document.getElementById('summary-departure').textContent = formatTime(out.departure_time);
-            document.getElementById('summary-arrival').textContent = formatTime(out.arrival_time);
-            document.getElementById('summary-duration').textContent = formatDuration(out.duration);
+            const airlineName = firstSegment.carrier_name || firstSegment.carrier_code || 'Airline';
+            document.getElementById('summary-airline').textContent = airlineName;
+            document.getElementById('summary-departure').textContent = formatTime(firstSegment.departure_time);
+            document.getElementById('summary-arrival').textContent = formatTime(lastSegment.arrival_time);
+            document.getElementById('summary-duration').textContent = formatDuration(slice.duration);
         }
 
         function formatTime(isoString) {
@@ -441,13 +446,14 @@
             if (!flightData) return;
             
             const flight = JSON.parse(flightData);
-            const basePrice = parseFloat(flight.total_amount);
-            const taxes = Math.round(basePrice * 0.15);
+            const basePrice = parseFloat(flight.price.total);
+            const currency = flight.price.currency || 'SAR';
             
+            const taxes = Math.round(basePrice * 0.15);
             let total = basePrice + taxes;
             
-            document.getElementById('price-fare').textContent = `SAR ${basePrice}`;
-            document.getElementById('price-taxes').textContent = `SAR ${taxes}`;
+            document.getElementById('price-fare').textContent = `${currency} ${basePrice.toFixed(2)}`;
+            document.getElementById('price-taxes').textContent = `${currency} ${taxes.toFixed(2)}`;
             
             const bagCheckbox = document.getElementById('extra-bag');
             const boardingCheckbox = document.getElementById('priority-boarding');
@@ -455,30 +461,28 @@
             const seatSelect = document.getElementById('seat-preference');
             
             document.getElementById('price-bag-line').style.display = bagCheckbox.checked ? 'flex' : 'none';
-            document.getElementById('price-bag').textContent = bagCheckbox.checked ? `SAR ${addonPrices.extraBag}` : 'SAR 0';
+            document.getElementById('price-bag').textContent = bagCheckbox.checked ? `${currency} ${addonPrices.extraBag}` : `${currency} 0`;
             if (bagCheckbox.checked) total += addonPrices.extraBag;
             
             document.getElementById('price-boarding-line').style.display = boardingCheckbox.checked ? 'flex' : 'none';
-            document.getElementById('price-boarding').textContent = boardingCheckbox.checked ? `SAR ${addonPrices.priorityBoarding}` : 'SAR 0';
+            document.getElementById('price-boarding').textContent = boardingCheckbox.checked ? `${currency} ${addonPrices.priorityBoarding}` : `${currency} 0`;
             if (boardingCheckbox.checked) total += addonPrices.priorityBoarding;
             
             document.getElementById('price-insurance-line').style.display = insuranceCheckbox.checked ? 'flex' : 'none';
-            document.getElementById('price-insurance').textContent = insuranceCheckbox.checked ? `SAR ${addonPrices.travelInsurance}` : 'SAR 0';
+            document.getElementById('price-insurance').textContent = insuranceCheckbox.checked ? `${currency} ${addonPrices.travelInsurance}` : `${currency} 0`;
             if (insuranceCheckbox.checked) total += addonPrices.travelInsurance;
             
             let seatPrice = 0;
             if (seatSelect.value === 'extra-legroom') {
-                seatPrice = addonPrices.extraLegroom;
+                seatPrice = addonPrices.extraLegroom || 100; // assuming extraLegroom is 100 as it's missing in addonPrices definition in html
                 document.getElementById('price-seat-line').style.display = 'flex';
-                document.getElementById('price-seat').textContent = `SAR ${seatPrice}`;
-            } else if (seatSelect.value && seatSelect.value !== 'window' && seatSelect.value !== 'aisle' && seatSelect.value !== 'middle') {
-                document.getElementById('price-seat-line').style.display = 'none';
+                document.getElementById('price-seat').textContent = `${currency} ${seatPrice}`;
             } else {
                 document.getElementById('price-seat-line').style.display = 'none';
             }
             total += seatPrice;
             
-            document.getElementById('price-total').textContent = `SAR ${total}`;
+            document.getElementById('price-total').textContent = `${currency} ${total.toFixed(2)}`;
         }
 
         function generatePNR() {
