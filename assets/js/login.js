@@ -1,8 +1,18 @@
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
             
+            const errContainer = document.getElementById('login-error');
+            
+            if (!email || !password) {
+                errContainer.textContent = 'Email and password are required';
+                errContainer.style.display = 'block';
+                return;
+            }
+            
+            errContainer.style.display = 'none';
+
             try {
                 const res = await fetch('../backend/api/auth/login.php', {
                     method: 'POST',
