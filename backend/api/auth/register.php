@@ -21,16 +21,19 @@ if ($stmt->fetch()) {
 }
 
 $hash = password_hash($data['password'], PASSWORD_BCRYPT);
-$stmt = $pdo->prepare("INSERT INTO user (first_name, last_name, email, password_hash) VALUES (?, ?, ?, ?)");
+$phone_number = !empty($data['phone_number']) ? $data['phone_number'] : null;
+
+$stmt = $pdo->prepare("INSERT INTO user (first_name, last_name, email, phone_number, password_hash) VALUES (?, ?, ?, ?, ?)");
 
 try {
-    $stmt->execute([$data['first_name'], $data['last_name'], $data['email'], $hash]);
+    $stmt->execute([$data['first_name'], $data['last_name'], $data['email'], $phone_number, $hash]);
     $userId = $pdo->lastInsertId();
     
     $_SESSION['user_id'] = $userId;
     $_SESSION['first_name'] = $data['first_name'];
     $_SESSION['last_name'] = $data['last_name'];
     $_SESSION['email'] = $data['email'];
+    $_SESSION['phone_number'] = $phone_number;
     
     echo json_encode(['success' => true]);
 } catch (Exception $e) {
