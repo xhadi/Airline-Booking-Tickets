@@ -6,14 +6,15 @@ header('Content-Type: application/json');
 
 $data = json_decode(file_get_contents('php://input'), true);
 
-if (!isset($data['email'], $data['password'])) {
+if (!isset($data['email'], $data['password']) || trim($data['email']) === '' || trim($data['password']) === '') {
     http_response_code(400);
     echo json_encode(['error' => 'Email and password are required']);
     exit;
 }
 
+$email = trim($data['email']);
 $stmt = $pdo->prepare("SELECT id, first_name, last_name, email, password_hash FROM user WHERE email = ?");
-$stmt->execute([$data['email']]);
+$stmt->execute([$email]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if ($user && password_verify($data['password'], $user['password_hash'])) {
