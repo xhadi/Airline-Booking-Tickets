@@ -21,10 +21,11 @@ PHP + HTML/CSS/JS flight booking website ("SkyBound"). No build system, no npm, 
 ## Quirks & Conventions
 
 - **Frontend Auth**: Route protection and navbar state are handled entirely by `assets/js/auth.js` which polls `backend/api/auth/status.php` on every page load.
+- **Form Validation**: Client-side JS validates required inputs before making API calls. Backend endpoints explicitly return `400` with `{"error": "message"}` on validation failure, which frontend JS intercepts and displays in `#<form-name>-error` container divs.
 - **Flight Data Structure**: The frontend expects flight data structured similarly to the Duffel API v2 response format (e.g., `flight.slices[0].segments` for route details, `flight.price.total` for pricing).
 - **Client-Side Rendering**: HTML pages are essentially shells. Data like flight results, user profile details, and dynamic pricing are injected into the DOM via vanilla JavaScript `fetch()` calls.
 - **Hardcoded Airports**: Airport list in `index.html` is hardcoded. Extend there, not via API.
-- **Dependencies**: Uses `flatpickr` CDN for date picker. No build systems.
+- **Dependencies**: Uses `flatpickr` CDN for date picker, and `intl-tel-input` CDN for phone numbers. No build systems.
 
 ## What to Leave Out
 
