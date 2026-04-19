@@ -101,7 +101,7 @@ function renderProfile(data) {
                     </div>
                 </div>
             </div>
-        \`;
+        `;
     });
     
     container.innerHTML = html;
