@@ -51,25 +51,42 @@
                                 <span class="material-symbols-outlined profile-avatar-icon">person</span>
                             </div>
                             <div class="profile-identity">
-                                <h1 class="profile-name">Sarah Johnson</h1>
-                                <p class="profile-email">sarah.johnson@email.com</p>
-                                <p class="profile-member-since">Member since January 2024</p>
+                                <h1 class="profile-name" id="profile-name">Loading...</h1>
+                                <p class="profile-email" id="profile-email">Loading...</p>
+                                <p class="profile-member-since" id="profile-member-since">Loading...</p>
                             </div>
                         </div>
                         <div class="profile-stats">
                             <div class="profile-stat">
-                                <span class="profile-stat-value">12</span>
-                                <span class="profile-stat-label">Flights</span>
+                                <span class="profile-stat-value" id="stat-flights">0</span>
+                                <span class="profile-stat-label">Total Flights</span>
                             </div>
                             <div class="profile-stat">
-                                <span class="profile-stat-value">8</span>
-                                <span class="profile-stat-label">Countries</span>
+                                <span class="profile-stat-value" id="stat-spent">0</span>
+                                <span class="profile-stat-label">Total Spent</span>
                             </div>
                             <div class="profile-stat">
-                                <span class="profile-stat-value">47,250</span>
-                                <span class="profile-stat-label">Miles</span>
+                                <span class="profile-stat-value" id="stat-passengers">0</span>
+                                <span class="profile-stat-label">Total Passengers</span>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Profile Content -->
+            <section class="profile-content-section">
+                <div class="container">
+                    <div class="profile-content">
+                        <div class="profile-section">
+                            <div class="section-header">
+                                <h2 class="section-title">My Bookings</h2>
+                            </div>
+                            <div id="bookings-container" class="bookings-list">
+                                <div style="text-align:center; padding: 2rem; color: #6B7280;">Loading bookings...</div>
+                            </div>
+                        </div>
+                    </div>
                     </div>
                 </div>
             </section>
@@ -314,5 +331,6 @@
         </footer>
         <!-- END: Footer -->
     <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/profile.js"></script>
 </body>
 </html>
