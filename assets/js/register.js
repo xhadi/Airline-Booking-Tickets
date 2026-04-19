@@ -4,12 +4,13 @@
             const last_name = document.getElementById('last-name').value;
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const phone_number = document.getElementById('phone-number')?.value || null;
             
             try {
                 const res = await fetch('../backend/api/auth/register.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ first_name, last_name, email, password })
+                    body: JSON.stringify({ first_name, last_name, email, password, phone_number })
                 });
                 const data = await res.json();
                 
