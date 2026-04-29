@@ -22,12 +22,6 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 
-if (mb_strlen($new_password) < 8) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Password must be at least 8 characters']);
-    exit;
-}
-
 $stmt = $pdo->prepare("SELECT id, security_answer_hash FROM user WHERE email = ?");
 $stmt->execute([$email]);
 $user = $stmt->fetch();
@@ -41,6 +35,11 @@ if (!$user) {
 if (!password_verify($answer, $user['security_answer_hash'])) {
     http_response_code(400);
     echo json_encode(['error' => 'Incorrect answer']);
+    exit;
+}
+
+if (!$new_password || mb_strlen($new_password) < 8) {
+    echo json_encode(['verified' => true]);
     exit;
 }
 

@@ -10,6 +10,8 @@ CREATE TABLE user (
     email VARCHAR(255) NOT NULL UNIQUE,
     phone_number VARCHAR(50), 
     password_hash VARCHAR(255) NOT NULL,
+    security_question VARCHAR(255) NOT NULL,
+    security_answer_hash VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );

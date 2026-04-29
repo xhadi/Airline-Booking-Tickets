@@ -35,6 +35,21 @@ if (mb_strlen($password) < 8) {
     exit;
 }
 
+$security_question = trim($data['security_question'] ?? '');
+$security_answer = trim($data['security_answer'] ?? '');
+
+if (empty($security_question)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Security question is required']);
+    exit;
+}
+
+if (empty($security_answer) || mb_strlen($security_answer) < 2) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Security answer must be at least 2 characters']);
+    exit;
+}
+
 $stmt = $pdo->prepare("SELECT id FROM user WHERE email = ?");
 $stmt->execute([$email]);
 if ($stmt->fetch()) {
@@ -46,10 +61,12 @@ if ($stmt->fetch()) {
 $hash = password_hash($password, PASSWORD_BCRYPT);
 $phone_number = !empty($data['phone_number']) ? trim($data['phone_number']) : null;
 
-$stmt = $pdo->prepare("INSERT INTO user (first_name, last_name, email, phone_number, password_hash) VALUES (?, ?, ?, ?, ?)");
+$stmt = $pdo->prepare("INSERT INTO user (first_name, last_name, email, phone_number, password_hash, security_question, security_answer_hash) VALUES (?, ?, ?, ?, ?, ?, ?)");
+
+$answerHash = password_hash($security_answer, PASSWORD_BCRYPT);
 
 try {
-    $stmt->execute([$first_name, $last_name, $email, $phone_number, $hash]);
+    $stmt->execute([$first_name, $last_name, $email, $phone_number, $hash, $security_question, $answerHash]);
     $userId = $pdo->lastInsertId();
     
     $_SESSION['user_id'] = $userId;

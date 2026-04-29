@@ -31,15 +31,15 @@
             <!-- Form (ID preserved for JS) -->
             <form id="register-form" class="auth-form">
                 
-                <div style="display: flex; gap: 1rem;">
+                <div style="display: flex; gap: 0.75rem;">
                     <div class="auth-input-group" style="flex: 1;">
                         <label for="first-name" class="auth-label">First Name</label>
-                        <input type="text" id="first-name" class="auth-input" placeholder="First Name" required>
+                        <input type="text" id="first-name" class="auth-input" placeholder="First" required>
                     </div>
 
                     <div class="auth-input-group" style="flex: 1;">
                         <label for="last-name" class="auth-label">Last Name</label>
-                        <input type="text" id="last-name" class="auth-input" placeholder="Last Name" required>
+                        <input type="text" id="last-name" class="auth-input" placeholder="Last" required>
                     </div>
                 </div>
 
@@ -59,16 +59,21 @@
                 </div>
 
                 <div class="auth-input-group">
+                    <label for="confirm-password" class="auth-label">Confirm Password</label>
+                    <input type="password" id="confirm-password" class="auth-input" placeholder="••••••••" required minlength="8">
+                </div>
+
+                <div class="auth-input-group">
                     <label for="security-question" class="auth-label">Security Question</label>
                     <select id="security-question" class="auth-input" required>
-                        <option value="" disabled selected>Select a security question</option>
-                        <option value="What city were you born in?">What city were you born in?</option>
-                        <option value="What is your mother's maiden name?">What is your mother's maiden name?</option>
-                        <option value="What is the name of your first pet?">What is the name of your first pet?</option>
-                        <option value="What was the name of your first school?">What was the name of your first school?</option>
-                        <option value="What is your favorite movie?">What is your favorite movie?</option>
-                        <option value="What is the name of your best friend?">What is the name of your best friend?</option>
-                        <option value="What was your first car's make and model?">What was your first car's make and model?</option>
+                        <option value="" disabled selected>Select a question</option>
+                        <option value="What city were you born in?">City of birth</option>
+                        <option value="What is your mother's maiden name?">Mother's maiden name</option>
+                        <option value="What is the name of your first pet?">First pet's name</option>
+                        <option value="What was the name of your first school?">First school name</option>
+                        <option value="What is your favorite movie?">Favorite movie</option>
+                        <option value="What is the name of your best friend?">Best friend's name</option>
+                        <option value="What was your first car's make and model?">First car</option>
                     </select>
                 </div>
 

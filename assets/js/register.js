@@ -11,6 +11,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     const last_name = document.getElementById('last-name').value.trim();
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value.trim();
+    const confirm_password = document.getElementById('confirm-password').value.trim();
     const security_question = document.getElementById('security-question').value.trim();
     const security_answer = document.getElementById('security-answer').value.trim();
     
@@ -40,6 +41,12 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
             
             if (password.length < 8) {
                 errContainer.textContent = 'Password must be at least 8 characters';
+                errContainer.style.display = 'block';
+                return;
+            }
+
+            if (password !== confirm_password) {
+                errContainer.textContent = 'Passwords do not match';
                 errContainer.style.display = 'block';
                 return;
             }
