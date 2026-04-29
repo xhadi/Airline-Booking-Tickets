@@ -12,12 +12,18 @@ class DuffelAPI {
         $this->baseUrl = 'https://api.duffel.com';
     }
 
-    public function executeRequest($endpoint, $method = 'GET', $payload = null) {
+    public function executeRequest($endpoint, $method = 'GET', $payload = null, $queryParams = []) {
         if (empty($this->apiKey)) {
             throw new Exception("Duffel API credentials are not configured.");
         }
 
         $url = $this->baseUrl . $endpoint;
+
+        // Append query parameters for GET requests
+        if ($method === 'GET' && !empty($queryParams)) {
+            $url .= '?' . http_build_query($queryParams);
+        }
+
         $ch = curl_init($url);
         
         $headers = [
@@ -33,7 +39,8 @@ class DuffelAPI {
                 curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonPayload);
                 $headers[] = 'Content-Type: application/json';
             }
-        } elseif ($method === 'GET' && $payload) {
+        } elseif ($method === 'GET' && $payload && empty($queryParams)) {
+            // Legacy: GET with payload as query params (for backward compat)
             $url .= '?' . http_build_query($payload);
             curl_setopt($ch, CURLOPT_URL, $url);
         }
@@ -41,8 +48,6 @@ class DuffelAPI {
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-        
-        // Fix for "Connection was reset" / Cloudflare blocking local cURL
         curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
         curl_setopt($ch, CURLOPT_USERAGENT, 'SkyBound-LocalDev/1.0');
         curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
