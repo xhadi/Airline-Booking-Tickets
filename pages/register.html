@@ -58,6 +58,25 @@
                     <input type="password" id="password" class="auth-input" placeholder="••••••••" required minlength="8">
                 </div>
 
+                <div class="auth-input-group">
+                    <label for="security-question" class="auth-label">Security Question</label>
+                    <select id="security-question" class="auth-input" required>
+                        <option value="" disabled selected>Select a security question</option>
+                        <option value="What city were you born in?">What city were you born in?</option>
+                        <option value="What is your mother's maiden name?">What is your mother's maiden name?</option>
+                        <option value="What is the name of your first pet?">What is the name of your first pet?</option>
+                        <option value="What was the name of your first school?">What was the name of your first school?</option>
+                        <option value="What is your favorite movie?">What is your favorite movie?</option>
+                        <option value="What is the name of your best friend?">What is the name of your best friend?</option>
+                        <option value="What was your first car's make and model?">What was your first car's make and model?</option>
+                    </select>
+                </div>
+
+                <div class="auth-input-group">
+                    <label for="security-answer" class="auth-label">Security Answer</label>
+                    <input type="text" id="security-answer" class="auth-input" placeholder="Your answer" required minlength="2">
+                </div>
+
                 <button type="submit" class="btn-auth">Register</button>
             </form>
 

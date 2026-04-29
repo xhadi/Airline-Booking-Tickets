@@ -11,6 +11,8 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     const last_name = document.getElementById('last-name').value.trim();
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value.trim();
+    const security_question = document.getElementById('security-question').value.trim();
+    const security_answer = document.getElementById('security-answer').value.trim();
     
     const errContainer = document.getElementById('register-error');
     
@@ -41,6 +43,18 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
                 errContainer.style.display = 'block';
                 return;
             }
+
+            if (!security_question) {
+                errContainer.textContent = 'Please select a security question';
+                errContainer.style.display = 'block';
+                return;
+            }
+
+            if (security_answer.length < 2) {
+                errContainer.textContent = 'Security answer must be at least 2 characters';
+                errContainer.style.display = 'block';
+                return;
+            }
             
             errContainer.style.display = 'none';
             
@@ -48,7 +62,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
                 const res = await fetch('../backend/api/auth/register.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ first_name, last_name, email, password, phone_number })
+                    body: JSON.stringify({ first_name, last_name, email, password, phone_number, security_question, security_answer })
                 });
                 const data = await res.json();
                 
