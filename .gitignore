@@ -20,3 +20,7 @@ desktop.ini
 *.log
 /tmp
 /temp
+
+# 5. Agent files
+AGENTS.md
+docs/*
