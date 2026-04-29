@@ -41,10 +41,12 @@ class DuffelAPI {
             }
         } elseif ($method === 'GET' && $payload && empty($queryParams)) {
             // Legacy: GET with payload as query params (for backward compat)
+            // Note: curl_init($url) called above with original URL, then overridden here
             $url .= '?' . http_build_query($payload);
             curl_setopt($ch, CURLOPT_URL, $url);
         }
 
+        // Fix for "Connection was reset" / Cloudflare blocking local cURL
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 30);
