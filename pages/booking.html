@@ -138,65 +138,65 @@
                         </div>
 
                         <!-- Add-ons -->
-                        <div class="booking-section">
+                        <div class="booking-section" id="addons-section">
                             <div class="section-header">
                                 <span class="material-symbols-outlined section-icon">add_circle</span>
                                 <h2 class="section-title">Add-ons (Optional)</h2>
                             </div>
                             <div class="section-content">
-                                <div class="addons-grid">
-                                    <div class="addon-item">
-                                        <div class="addon-header">
-                                            <input type="checkbox" id="extra-bag" class="addon-checkbox" onchange="updateTotal()">
-                                            <label for="extra-bag" class="addon-label">
-                                                <span class="material-symbols-outlined addon-icon">luggage</span>
-                                                <span>Extra Checked Bag (23kg)</span>
-                                            </label>
-                                        </div>
-                                        <span class="addon-price">+SAR 75</span>
-                                    </div>
-                                    <div class="addon-item">
-                                        <div class="addon-header">
-                                            <input type="checkbox" id="priority-boarding" class="addon-checkbox" onchange="updateTotal()">
-                                            <label for="priority-boarding" class="addon-label">
-                                                <span class="material-symbols-outlined addon-icon">priority_high</span>
-                                                <span>Priority Boarding</span>
-                                            </label>
-                                        </div>
-                                        <span class="addon-price">+SAR 50</span>
-                                    </div>
-                                    <div class="addon-item">
-                                        <div class="addon-header">
-                                            <input type="checkbox" id="travel-insurance" class="addon-checkbox" onchange="updateTotal()">
-                                            <label for="travel-insurance" class="addon-label">
-                                                <span class="material-symbols-outlined addon-icon">health_and_safety</span>
-                                                <span>Travel Insurance</span>
-                                            </label>
-                                        </div>
-                                        <span class="addon-price">+SAR 45</span>
-                                    </div>
+                                <div id="addons-loading" class="addons-loading">
+                                    <span class="material-symbols-outlined spinning">sync</span>
+                                    <span>Loading available add-ons...</span>
                                 </div>
-                                <div class="addons-selects">
-                                    <div class="addon-select-group">
-                                        <label class="field-label" for="seat-preference">Seat Preference</label>
-                                        <select class="search-input" id="seat-preference" onchange="updateTotal()">
-                                            <option value="">No preference (Random)</option>
-                                            <option value="window">Window</option>
-                                            <option value="aisle">Aisle</option>
-                                            <option value="middle">Middle</option>
-                                            <option value="extra-legroom">Extra Legroom (+SAR 100)</option>
-                                        </select>
+
+                                <!-- Baggage Selection -->
+                                <div id="baggage-section" style="display: none;">
+                                    <h3 class="addon-section-title">Extra Baggage</h3>
+                                    <div id="baggage-included" class="baggage-included"></div>
+                                    <div id="baggage-options" class="baggage-options-grid"></div>
+                                </div>
+
+                                <!-- Seat Selection -->
+                                <div id="seat-selection-section" style="display: none;">
+                                    <h3 class="addon-section-title">Seat Selection</h3>
+                                    <div id="seat-summary-container"></div>
+                                </div>
+
+                                <!-- No Services Message -->
+                                <div id="no-services-msg" class="no-services-msg" style="display: none;">
+                                    <span class="material-symbols-outlined">info</span>
+                                    <span>No extra baggage or seat selection available for this flight.</span>
+                                </div>
+
+                                <!-- Error Message -->
+                                <div id="addons-error" class="addons-error" style="display: none;">
+                                    <span class="material-symbols-outlined">error_outline</span>
+                                    <span id="addons-error-text">Unable to load add-ons at this time. You can still proceed with booking.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Seat Map Modal -->
+                        <div id="seat-map-modal" class="seat-map-modal" style="display: none;">
+                            <div class="seat-map-modal-backdrop" onclick="closeSeatMapModal()"></div>
+                            <div class="seat-map-modal-content">
+                                <div class="seat-map-modal-header">
+                                    <div>
+                                        <h3 class="seat-map-modal-title" id="seat-map-modal-title">Select a Seat</h3>
+                                        <p class="seat-map-modal-subtitle" id="seat-map-modal-subtitle"></p>
                                     </div>
-                                    <div class="addon-select-group">
-                                        <label class="field-label" for="meal-preference">Meal Preference</label>
-                                        <select class="search-input" id="meal-preference">
-                                            <option value="standard">Standard Meal</option>
-                                            <option value="vegetarian">Vegetarian</option>
-                                            <option value="vegan">Vegan</option>
-                                            <option value="halal">Halal</option>
-                                            <option value="kosher">Kosher</option>
-                                        </select>
+                                    <button class="seat-map-modal-close" onclick="closeSeatMapModal()" type="button">
+                                        <span class="material-symbols-outlined">close</span>
+                                    </button>
+                                </div>
+                                <div class="seat-map-modal-body">
+                                    <div class="seat-map-legend">
+                                        <span class="legend-item"><span class="legend-dot available"></span> Available</span>
+                                        <span class="legend-item"><span class="legend-dot selected"></span> Selected</span>
+                                        <span class="legend-item"><span class="legend-dot occupied"></span> Occupied</span>
+                                        <span class="legend-item"><span class="legend-dot free"></span> Free</span>
                                     </div>
+                                    <div id="seat-map-grid" class="seat-map-grid"></div>
                                 </div>
                             </div>
                         </div>
@@ -256,14 +256,6 @@
                             <div class="price-line" id="price-bag-line" style="display: none;">
                                 <span>Extra Baggage</span>
                                 <span id="price-bag">SAR 0</span>
-                            </div>
-                            <div class="price-line" id="price-boarding-line" style="display: none;">
-                                <span>Priority Boarding</span>
-                                <span id="price-boarding">SAR 0</span>
-                            </div>
-                            <div class="price-line" id="price-insurance-line" style="display: none;">
-                                <span>Travel Insurance</span>
-                                <span id="price-insurance">SAR 0</span>
                             </div>
                             <div class="price-line" id="price-seat-line" style="display: none;">
                                 <span>Seat Selection</span>
