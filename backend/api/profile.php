@@ -14,7 +14,7 @@ $userId = $_SESSION['user_id'];
 
 try {
     // Get user info
-    $stmtUser = $pdo->prepare("SELECT first_name, last_name, email, created_at FROM user WHERE id = ?");
+    $stmtUser = $pdo->prepare("SELECT first_name, last_name, email, phone_number, created_at FROM user WHERE id = ?");
     $stmtUser->execute([$userId]);
     $user = $stmtUser->fetch(PDO::FETCH_ASSOC);
 
@@ -24,8 +24,38 @@ try {
         exit;
     }
 
-    // Get bookings
-    $stmtBookings = $pdo->prepare("SELECT id, pnr, total_price, currency, status, passenger_count, flight_snapshot, created_at FROM booking WHERE user_id = ? ORDER BY created_at DESC");
+    // Get travelers
+    $stmtTravelers = $pdo->prepare("
+        SELECT id, first_name, last_name, date_of_birth, gender, 
+               passport_number_encrypted, issuing_country, document_expiry
+        FROM traveler_profile 
+        WHERE user_id = ? 
+        ORDER BY created_at DESC
+    ");
+    $stmtTravelers->execute([$userId]);
+    $travelers = $stmtTravelers->fetchAll(PDO::FETCH_ASSOC);
+
+    // Process travelers (mask passport)
+    require_once '../lib/encryption.php';
+    foreach ($travelers as &$t) {
+        if ($t['passport_number_encrypted']) {
+            $decrypted = decryptData($t['passport_number_encrypted']);
+            $t['passport_last4'] = substr($decrypted, -4);
+            $t['passport_masked'] = '•••• •••• ' . $t['passport_last4'];
+            $t['is_complete'] = !empty($t['issuing_country']) && !empty($t['document_expiry']);
+        } else {
+            $t['passport_masked'] = null;
+            $t['is_complete'] = false;
+        }
+        unset($t['passport_number_encrypted']); // Don't send encrypted data to frontend
+    }
+
+    // Get bookings with passenger count from passenger table
+    $stmtBookings = $pdo->prepare("
+        SELECT id, pnr, total_price, currency, status, flight_snapshot, created_at,
+               (SELECT COUNT(*) FROM passenger WHERE booking_id = booking.id) AS passenger_count
+        FROM booking WHERE user_id = ? ORDER BY created_at DESC
+    ");
     $stmtBookings->execute([$userId]);
     $bookings = $stmtBookings->fetchAll(PDO::FETCH_ASSOC);
 
@@ -44,6 +74,7 @@ try {
     echo json_encode([
         'success' => true,
         'user' => $user,
+        'travelers' => $travelers,
         'stats' => [
             'total_flights' => $totalFlights,
             'total_spent' => $totalSpent,
