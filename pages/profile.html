@@ -53,6 +53,7 @@
                             <div class="profile-identity">
                                 <h1 class="profile-name" id="profile-name">Loading...</h1>
                                 <p class="profile-email" id="profile-email">Loading...</p>
+                                <p class="profile-phone" id="profile-phone">Loading...</p>
                                 <p class="profile-member-since" id="profile-member-since">Loading...</p>
                             </div>
                         </div>
@@ -74,18 +75,69 @@
                 </div>
             </section>
 
-            <!-- Profile Content -->
-            <section class="profile-content-section">
+            <!-- Identity Vault Section -->
+            <section class="profile-content-section identity-vault-section">
                 <div class="container">
-                    <div class="profile-content">
-                        <div class="profile-section">
-                            <div class="section-header">
-                                <h2 class="section-title">My Bookings</h2>
-                            </div>
-                            <div id="bookings-container" class="bookings-list">
-                                <div style="text-align:center; padding: 2rem; color: #6B7280;">Loading bookings...</div>
-                            </div>
+                    <div class="section-header">
+                        <h2 class="section-title">Identity Vault</h2>
+                        <p class="section-subtitle">Manage your saved travelers for faster checkout</p>
+                    </div>
+                    <div id="travelers-container" class="travelers-grid">
+                        <div style="text-align:center; padding: 2rem; color: #6B7280;">Loading travelers...</div>
+                    </div>
+                    <button class="btn-add-traveler" id="btn-add-traveler">+ Add New Traveler</button>
+                </div>
+            </section>
+
+            <!-- Command Center Section -->
+            <section class="profile-content-section command-center-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2 class="section-title">Command Center</h2>
+                        <p class="section-subtitle">Your active itineraries and booking history</p>
+                    </div>
+                    
+                    <div class="booking-section">
+                        <h3 class="booking-subtitle">Active Itineraries</h3>
+                        <div id="active-bookings-container" class="bookings-list">
+                            <div style="text-align:center; padding: 2rem; color: #6B7280;">Loading active bookings...</div>
                         </div>
+                    </div>
+                    
+                    <div class="booking-section">
+                        <h3 class="booking-subtitle collapsible-header" id="historical-header">
+                            Historical Flights
+                            <span class="collapse-icon">▼</span>
+                        </h3>
+                        <div id="historical-bookings-container" class="bookings-list collapsible-content">
+                            <div style="text-align:center; padding: 2rem; color: #6B7280;">Loading historical bookings...</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Account Settings Section -->
+            <section class="profile-content-section account-settings-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2 class="section-title">Account & Security Settings</h2>
+                        <p class="section-subtitle">Manage your account details and security preferences</p>
+                    </div>
+                    <div class="settings-form" id="settings-form">
+                        <div class="form-group">
+                            <label class="form-label">Email (read-only)</label>
+                            <input type="email" class="form-input" id="settings-email" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" class="form-input" id="settings-phone">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">New Password</label>
+                            <input type="password" class="form-input" id="settings-password" placeholder="Leave blank to keep current">
+                            <button class="btn-reset-password" id="btn-reset-password">Send Password Reset Email</button>
+                        </div>
+                        <button class="btn-save-settings" id="btn-save-settings">Save Changes</button>
                     </div>
                 </div>
             </section>
