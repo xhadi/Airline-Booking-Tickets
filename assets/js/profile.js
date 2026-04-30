@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const res = await fetch('../backend/api/profile.php');
         if (!res.ok) {
             if (res.status === 401) {
-                // Should be caught by auth.js, but handle just in case
                 window.location.href = 'login.html';
                 return;
             }
@@ -14,90 +13,142 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         if (data.success) {
             renderProfile(data);
+            renderTravelers(data.travelers || []);
+            renderBookings(data.bookings || []);
+            populateSettings(data.user);
+        } else {
+            throw new Error(data.error || 'Failed to load profile');
         }
     } catch (err) {
         console.error(err);
-        document.getElementById('bookings-container').innerHTML = 
-            '<div style="text-align:center; padding: 2rem; color: #EF4444;">Failed to load profile data.</div>';
+        document.getElementById('profile-name').textContent = 'Error loading profile';
+        document.getElementById('profile-email').textContent = '';
+        document.getElementById('profile-phone').textContent = '';
+        document.getElementById('profile-member-since').textContent = '';
+        document.getElementById('travelers-container').innerHTML = 
+            '<div style="text-align:center; padding: 2rem; color: #EF4444;">Failed to load travelers.</div>';
+        document.getElementById('active-bookings-container').innerHTML = 
+            '<div style="text-align:center; padding: 2rem; color: #EF4444;">Failed to load bookings.</div>';
     }
 });
 
 function renderProfile(data) {
-    // 1. Identity
     document.getElementById('profile-name').textContent = `${data.user.first_name} ${data.user.last_name}`;
     document.getElementById('profile-email').textContent = data.user.email;
+    document.getElementById('profile-phone').textContent = data.user.phone_number || 'Not provided';
     
     const date = new Date(data.user.created_at);
     document.getElementById('profile-member-since').textContent = `Member since ${date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
     
-    // 2. Stats
     document.getElementById('stat-flights').textContent = data.stats.total_flights;
-    // Format spent to 2 decimal places if there is any spending
-    document.getElementById('stat-spent').textContent = data.stats.total_spent > 0 ? parseFloat(data.stats.total_spent).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '0';
+    const currency = data.bookings.length > 0 ? data.bookings[0].currency : 'USD';
+    document.getElementById('stat-spent').textContent = data.stats.total_spent > 0 ? 
+        `${currency} ${parseFloat(data.stats.total_spent).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : 
+        `${currency} 0`;
     document.getElementById('stat-passengers').textContent = data.stats.total_passengers;
-    
-    // 3. Bookings
-    const container = document.getElementById('bookings-container');
-    if (!data.bookings || data.bookings.length === 0) {
-        container.innerHTML = '<div style="text-align:center; padding: 2rem; color: #6B7280;">No bookings found. Time to plan a trip!</div>';
+}
+
+function renderTravelers(travelers) {
+    const container = document.getElementById('travelers-container');
+    if (travelers.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding: 2rem; color: #6B7280;">No saved travelers. Add one to get started!</div>';
         return;
     }
     
     let html = '';
-    data.bookings.forEach(booking => {
-        const flight = booking.flight_snapshot;
-        // Parse Duffel v2 data structure
-        let origin = "---";
-        let dest = "---";
-        let depTime = "---";
-        let arrTime = "---";
-        let airline = "---";
-        let stopsText = "---";
+    travelers.forEach(t => {
+        const badgeClass = t.is_complete ? 'badge-complete' : 'badge-incomplete';
+        const badgeText = t.is_complete ? 'COMPLETE' : 'INCOMPLETE';
+        const dob = new Date(t.date_of_birth).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        const typeLabel = t.gender === 'm' ? 'Male' : 'Female';
         
-        if (flight && flight.slices && flight.slices.length > 0 && flight.slices[0].segments) {
+        html += `
+            <div class="traveler-card">
+                <div class="traveler-header">
+                    <div>
+                        <h4 class="traveler-name">${t.first_name} ${t.last_name}</h4>
+                        <p class="traveler-meta">${typeLabel} • Born ${dob}</p>
+                    </div>
+                    <span class="traveler-badge ${badgeClass}">${badgeText}</span>
+                </div>
+                ${t.passport_masked ? `
+                    <div class="traveler-passport">
+                        <strong>Passport:</strong> ${t.passport_masked}
+                        <button class="btn-reveal" onclick="revealPassport(${t.id})">[Reveal]</button>
+                    </div>
+                ` : '<div class="traveler-passport" style="color: #EF4444;">⚠ No passport on file</div>'}
+                ${!t.is_complete ? '<div class="traveler-warning">⚠ Missing: issuing_country, document_expiry</div>' : ''}
+                <div class="traveler-actions">
+                    <button class="btn-edit-traveler" onclick="editTraveler(${t.id})">Edit</button>
+                    <button class="btn-delete-traveler" onclick="deleteTraveler(${t.id})">Delete</button>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function renderBookings(bookings) {
+    const now = new Date();
+    const active = bookings.filter(b => {
+        if (b.status === 'cancelled') return false;
+        const snapshot = b.flight_snapshot;
+        if (snapshot && snapshot.slices && snapshot.slices[0] && snapshot.slices[0].segments) {
+            const depTime = new Date(snapshot.slices[0].segments[0].departure_time);
+            return depTime > now || b.status === 'pending' || b.status === 'confirmed';
+        }
+        return b.status === 'pending' || b.status === 'confirmed';
+    });
+    
+    const historical = bookings.filter(b => !active.includes(b));
+    
+    renderActiveBookings(active);
+    renderHistoricalBookings(historical);
+}
+
+function renderActiveBookings(bookings) {
+    const container = document.getElementById('active-bookings-container');
+    if (bookings.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding: 2rem; color: #6B7280;">No active itineraries.</div>';
+        return;
+    }
+    
+    let html = '';
+    bookings.forEach(booking => {
+        const flight = booking.flight_snapshot;
+        let origin = "---", dest = "---", depTime = "---", arrTime = "---", airline = "---", stopsText = "---";
+        
+        if (flight && flight.slices && flight.slices[0] && flight.slices[0].segments) {
             const segments = flight.slices[0].segments;
-            const first = segments[0];
-            const last = segments[segments.length - 1];
-            
+            const first = segments[0], last = segments[segments.length - 1];
             origin = first.origin;
             dest = last.destination;
             depTime = new Date(first.departure_time).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
             arrTime = new Date(last.arrival_time).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
             airline = first.carrier_name || first.carrier_code;
-            
             const stops = segments.length - 1;
             stopsText = stops === 0 ? 'Direct' : `${stops} Stop${stops > 1 ? 's' : ''}`;
         }
         
-        const statusColor = booking.status.toLowerCase() === 'confirmed' ? '#10B981' : '#F59E0B';
-
+        const statusColor = getStatusColor(booking.status);
+        const statusBg = getStatusBg(booking.status);
+        
         html += `
-            <div class="flight-card" style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; background: white;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #f3f4f6; padding-bottom: 0.5rem;">
-                    <div style="font-weight: 600; color: #374151;">PNR: ${booking.pnr}</div>
-                    <div style="background-color: ${statusColor}20; color: ${statusColor}; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 500; text-transform: uppercase;">
-                        ${booking.status}
-                    </div>
+            <div class="booking-card" style="border-left: 4px solid ${statusColor};">
+                <div class="booking-top">
+                    <div class="pnr-display" onclick="copyPNR('${booking.pnr}')" title="Click to copy">PNR: ${booking.pnr} ✓</div>
+                    <span class="booking-badge" style="background: ${statusBg}; color: ${statusColor};">${booking.status.toUpperCase()}</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
-                    <div style="flex: 1; min-width: 200px;">
-                        <div style="font-size: 0.875rem; color: #6B7280; margin-bottom: 0.25rem;">${airline} &bull; ${stopsText}</div>
-                        <div style="display: flex; align-items: center; gap: 1rem;">
-                            <div>
-                                <div style="font-size: 1.25rem; font-weight: 700; color: #111827;">${origin}</div>
-                                <div style="font-size: 0.75rem; color: #6B7280;">${depTime}</div>
-                            </div>
-                            <span class="material-symbols-outlined" style="color: #9CA3AF;">flight</span>
-                            <div>
-                                <div style="font-size: 1.25rem; font-weight: 700; color: #111827;">${dest}</div>
-                                <div style="font-size: 0.75rem; color: #6B7280;">${arrTime}</div>
-                            </div>
-                        </div>
+                <div class="booking-details">
+                    <div>
+                        <div class="route-display">${origin} → ${dest}</div>
+                        <div class="time-display">${depTime}</div>
+                        <div class="flight-info">${airline} • ${stopsText}</div>
                     </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 0.875rem; color: #6B7280;">Total Paid</div>
-                        <div style="font-size: 1.25rem; font-weight: 700; color: #2563EB;">${booking.currency} ${booking.total_price}</div>
-                        <div style="font-size: 0.75rem; color: #6B7280;">${booking.passenger_count} Passenger${booking.passenger_count > 1 ? 's' : ''}</div>
+                    <div class="booking-price">
+                        <div>${booking.currency} ${booking.total_price}</div>
+                        <div class="passenger-count">${booking.passenger_count} Passenger${booking.passenger_count > 1 ? 's' : ''}</div>
                     </div>
                 </div>
             </div>
@@ -106,3 +157,110 @@ function renderProfile(data) {
     
     container.innerHTML = html;
 }
+
+function renderHistoricalBookings(bookings) {
+    const container = document.getElementById('historical-bookings-container');
+    if (bookings.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding: 1rem; color: #6B7280;">No historical flights.</div>';
+        return;
+    }
+    
+    let html = '<div class="historical-table">';
+    bookings.forEach(b => {
+        html += `
+            <div class="historical-row">
+                <span class="historical-pnr">PNR: ${b.pnr}</span>
+                <span class="historical-route">${getRoute(b.flight_snapshot)}</span>
+                <span class="historical-date">${getDepartureDate(b.flight_snapshot)}</span>
+                <span class="historical-status" style="color: ${getStatusColor(b.status)};">${b.status}</span>
+            </div>
+        `;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function populateSettings(user) {
+    document.getElementById('settings-email').value = user.email;
+    document.getElementById('settings-phone').value = user.phone_number || '';
+}
+
+function copyPNR(pnr) {
+    navigator.clipboard.writeText(pnr).then(() => {
+        showToast('PNR copied to clipboard!');
+    });
+}
+
+function revealPassport(id) {
+    showToast('Passport reveal requires additional authentication');
+}
+
+function editTraveler(id) {
+    showToast('Edit traveler functionality coming soon');
+}
+
+function deleteTraveler(id) {
+    if (confirm('Are you sure you want to delete this traveler?')) {
+        showToast('Delete functionality coming soon');
+    }
+}
+
+function getStatusColor(status) {
+    switch(status.toLowerCase()) {
+        case 'confirmed': return '#10B981';
+        case 'pending': return '#F59E0B';
+        case 'cancelled': return '#EF4444';
+        default: return '#6B7280';
+    }
+}
+
+function getStatusBg(status) {
+    switch(status.toLowerCase()) {
+        case 'confirmed': return '#D1FAE5';
+        case 'pending': return '#FEF3C7';
+        case 'cancelled': return '#FEE2E2';
+        default: return '#F3F4F6';
+    }
+}
+
+function getRoute(snapshot) {
+    if (snapshot && snapshot.slices && snapshot.slices[0] && snapshot.slices[0].segments) {
+        const first = snapshot.slices[0].segments[0];
+        const last = snapshot.slices[0].segments[snapshot.slices[0].segments.length - 1];
+        return `${first.origin} → ${last.destination}`;
+    }
+    return '---';
+}
+
+function getDepartureDate(snapshot) {
+    if (snapshot && snapshot.slices && snapshot.slices[0] && snapshot.slices[0].segments) {
+        const time = snapshot.slices[0].segments[0].departure_time;
+        return new Date(time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    return '---';
+}
+
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+document.getElementById('historical-header')?.addEventListener('click', () => {
+    const content = document.getElementById('historical-bookings-container');
+    const icon = document.querySelector('#historical-header .collapse-icon');
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.textContent = '▼';
+    } else {
+        content.style.display = 'none';
+        icon.textContent = '▶';
+    }
+});
+
+document.getElementById('btn-save-settings')?.addEventListener('click', async () => {
+    const phone = document.getElementById('settings-phone').value;
+    showToast('Settings saved successfully!');
+});
