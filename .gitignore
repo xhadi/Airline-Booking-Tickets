@@ -23,4 +23,5 @@ desktop.ini
 
 # 5. Agent files
 AGENTS.md
-docs/*.superpowers/
+docs/*
+.superpowers/
