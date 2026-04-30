@@ -264,3 +264,152 @@ document.getElementById('btn-save-settings')?.addEventListener('click', async ()
     const phone = document.getElementById('settings-phone').value;
     showToast('Settings saved successfully!');
 });
+
+// Add New Traveler button
+document.getElementById('btn-add-traveler')?.addEventListener('click', () => {
+    showTravelerModal();
+});
+
+function showTravelerModal(travelerId = null) {
+    // Remove existing modal if any
+    const existingModal = document.getElementById('traveler-modal');
+    if (existingModal) existingModal.remove();
+    
+    const isEdit = travelerId !== null;
+    const title = isEdit ? 'Edit Traveler' : 'Add New Traveler';
+    
+    const modalHtml = `
+        <div id="traveler-modal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>${title}</h3>
+                    <button class="modal-close" onclick="closeTravelerModal()">✕</button>
+                </div>
+                <form id="traveler-form" class="modal-form">
+                    <div class="form-group">
+                        <label class="form-label">First Name</label>
+                        <input type="text" class="form-input" name="first_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" class="form-input" name="last_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Date of Birth</label>
+                        <input type="date" class="form-input" name="date_of_birth" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Gender</label>
+                        <select class="form-input" name="gender" required>
+                            <option value="m">Male</option>
+                            <option value="f">Female</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Passport Number (optional)</label>
+                        <input type="text" class="form-input" name="passport_number" placeholder="Leave blank if none">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Issuing Country (ISO code, e.g., USA)</label>
+                        <input type="text" class="form-input" name="issuing_country" maxlength="3" placeholder="Required">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Document Expiry</label>
+                        <input type="date" class="form-input" name="document_expiry">
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-cancel" onclick="closeTravelerModal()">Cancel</button>
+                        <button type="submit" class="btn-submit">${isEdit ? 'Update' : 'Add'} Traveler</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Handle form submission
+    document.getElementById('traveler-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const formData = {
+            first_name: e.target.first_name.value,
+            last_name: e.target.last_name.value,
+            date_of_birth: e.target.date_of_birth.value,
+            gender: e.target.gender.value,
+            passport_number: e.target.passport_number.value || undefined,
+            issuing_country: e.target.issuing_country.value || undefined,
+            document_expiry: e.target.document_expiry.value || undefined
+        };
+        
+        if (isEdit) {
+            formData.id = travelerId;
+        }
+        
+        try {
+            const method = isEdit ? 'PUT' : 'POST';
+            const res = await fetch('../backend/api/travelers.php', {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+            
+            const data = await res.json();
+            
+            if (data.success || data.id) {
+                showToast(isEdit ? 'Traveler updated!' : 'Traveler added!');
+                closeTravelerModal();
+                // Refresh profile data
+                refreshProfile();
+            } else {
+                showToast('Error: ' + (data.error || 'Failed to save'));
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Error saving traveler');
+        }
+    });
+}
+
+function closeTravelerModal() {
+    const modal = document.getElementById('traveler-modal');
+    if (modal) modal.remove();
+}
+
+async function refreshProfile() {
+    try {
+        const res = await fetch('../backend/api/profile.php');
+        const data = await res.json();
+        if (data.success) {
+            renderTravelers(data.travelers || []);
+        }
+    } catch (err) {
+        console.error('Failed to refresh profile', err);
+    }
+}
+
+// Update editTraveler function
+window.editTraveler = function(id) {
+    showToast('Edit functionality coming soon - need to fetch traveler details first');
+};
+
+// Update deleteTraveler function
+window.deleteTraveler = async function(id) {
+    if (confirm('Are you sure you want to delete this traveler?')) {
+        try {
+            const res = await fetch(`../backend/api/travelers.php?id=${id}`, {
+                method: 'DELETE'
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast('Traveler deleted!');
+                refreshProfile();
+            } else {
+                showToast('Error deleting traveler');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Error deleting traveler');
+        }
+    }
+};
