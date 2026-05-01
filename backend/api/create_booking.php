@@ -54,13 +54,20 @@ try {
         exit;
     }
 
-    // Step 2: Build passengers array for Duffel
+    // Step 2: Build passengers array for Duffel using IDs from the offer
     $duffelPassengers = [];
-    foreach ($input['passengers'] as $pax) {
+    $offerPassengers = $offer['passengers'] ?? [];
+    foreach ($input['passengers'] as $idx => $pax) {
+        // Get the Duffel passenger ID from the offer
+        $duffelPaxId = $offerPassengers[$idx]['id'] ?? null;
+        
         $duffelPax = [
-            'type' => $pax['type'] ?? 'adult',
+            'id' => $duffelPaxId,
             'given_name' => $pax['given_name'],
             'family_name' => $pax['family_name'],
+            'title' => $pax['title'] ?? 'mr',
+            'phone_number' => $pax['phone_number'] ?? '+12345678901',
+            'email' => $pax['email'] ?? 'test@example.com'
         ];
         if (!empty($pax['born_on'])) {
             $duffelPax['born_on'] = $pax['born_on'];
@@ -71,31 +78,82 @@ try {
         $duffelPassengers[] = $duffelPax;
     }
 
-    // Step 3: Build services array
+    // Step 3: Build services array and compute exact total Order amount
     $services = [];
+    $exactTotal = (float)$offer['total_amount'];
+
     if (!empty($input['services']) && is_array($input['services'])) {
+        $servicePrices = [];
+        // Extract baggage service prices
+        if (!empty($offer['available_services'])) {
+            foreach ($offer['available_services'] as $svc) {
+                $servicePrices[$svc['id']] = (float)$svc['total_amount'];
+            }
+        }
+        // Extract seat service prices
+        if (!empty($offer['slices'])) {
+            foreach ($offer['slices'] as $slice) {
+                if (!empty($slice['segments'])) {
+                    foreach ($slice['segments'] as $segment) {
+                        if (!empty($segment['seat_maps'])) {
+                            foreach ($segment['seat_maps'] as $map) {
+                                if (!empty($map['cabins'])) {
+                                    foreach ($map['cabins'] as $cabin) {
+                                        if (!empty($cabin['rows'])) {
+                                            foreach ($cabin['rows'] as $row) {
+                                                if (!empty($row['sections'])) {
+                                                    foreach ($row['sections'] as $section) {
+                                                        if (!empty($section['elements'])) {
+                                                            foreach ($section['elements'] as $element) {
+                                                                if (!empty($element['available_services'])) {
+                                                                    foreach ($element['available_services'] as $svc) {
+                                                                        $servicePrices[$svc['id']] = (float)$svc['total_amount'];
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         foreach ($input['services'] as $svc) {
+            $qty = (int)($svc['quantity'] ?? 1);
             $services[] = [
                 'id' => $svc['id'],
-                'quantity' => (int)($svc['quantity'] ?? 1),
+                'quantity' => $qty,
             ];
+            if (isset($servicePrices[$svc['id']])) {
+                $exactTotal += $servicePrices[$svc['id']] * $qty;
+            }
         }
     }
 
     // Step 4: Build order payload
     $orderPayload = [
-        'selected_offers' => [['offer_id' => $input['offer_id'], 'services' => $services]],
+        'type' => 'instant',
+        'selected_offers' => [$input['offer_id']],
         'passengers' => $duffelPassengers,
         'payments' => [
             [
-                'type' => 'instant',
-                'payment' => [
-                    'amount' => $input['payment']['amount'],
-                    'currency' => $input['payment']['currency'],
-                ],
+                'type' => $input['payment']['type'] ?? 'balance',
+                'amount' => number_format($exactTotal, 2, '.', ''),
+                'currency' => $input['payment']['currency'],
             ],
         ],
     ];
+
+    if (!empty($services)) {
+        $orderPayload['services'] = $services;
+    }
 
     // Step 5: Create the order
     $orderResponse = $duffel->executeRequest('/air/orders', 'POST', $orderPayload);
@@ -114,7 +172,7 @@ try {
     $stmt = $pdo->prepare("INSERT INTO booking (user_id, pnr, duffel_offer_id, duffel_order_id, total_price, currency, status, flight_snapshot, passenger_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
     $stmt->execute([
         $userId,
-        $order['pnr'] ?? null,
+        $order['booking_reference'] ?? $order['pnr'] ?? null,
         $input['offer_id'],
         $order['id'],
         (float)$order['total_amount'],
@@ -127,9 +185,16 @@ try {
     $bookingId = $pdo->lastInsertId();
 
     // Insert passenger records
+    require_once __DIR__ . '/../lib/encryption.php';
     foreach ($order['passengers'] as $idx => $dPax) {
         $localPax = $input['passengers'][$idx] ?? [];
-        $stmtPax = $pdo->prepare("INSERT INTO passenger (booking_id, duffel_passenger_id, first_name, last_name, date_of_birth, gender, passport_number, passenger_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        
+        $encryptedPassport = null;
+        if (!empty($localPax['passport_number'])) {
+            $encryptedPassport = encryptData($localPax['passport_number']);
+        }
+        
+        $stmtPax = $pdo->prepare("INSERT INTO passenger (booking_id, duffel_passenger_id, first_name, last_name, date_of_birth, gender, passport_number_encrypted, passenger_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         $stmtPax->execute([
             $bookingId,
             $dPax['id'] ?? null,
@@ -137,7 +202,7 @@ try {
             $localPax['family_name'] ?? '',
             $localPax['born_on'] ?? null,
             $localPax['gender'] ?? null,
-            $localPax['passport_number'] ?? null,
+            $encryptedPassport,
             $localPax['type'] ?? 'adult',
         ]);
     }
@@ -153,13 +218,14 @@ try {
     echo json_encode([
         'success' => true,
         'order_id' => $order['id'],
-        'pnr' => $order['pnr'],
+        'pnr' => $order['booking_reference'] ?? $order['pnr'] ?? null,
         'booking_id' => $bookingId,
         'total_amount' => $order['total_amount'],
         'currency' => $order['total_currency'],
     ]);
 
 } catch (Exception $e) {
+    error_log('Booking error: ' . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['error' => 'Internal server error']);
+    echo json_encode(['error' => 'Internal server error', 'debug' => $e->getMessage()]);
 }

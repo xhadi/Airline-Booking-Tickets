@@ -28,6 +28,7 @@ try {
 
     $offerId = trim($input['offer_id']);
 
+    require_once __DIR__ . '/../config/config.php';
     require_once __DIR__ . '/../lib/duffel.php';
     $duffel = new DuffelAPI();
 
