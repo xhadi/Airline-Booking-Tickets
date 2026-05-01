@@ -1,6 +1,7 @@
 # 1. Database Configuration and Sensitive Information
 # NEVER commit database credentials or API keys
 backend/config/db.php
+backend/config/config.php
 .env
 
 # 2. IDE and Editor Folders
