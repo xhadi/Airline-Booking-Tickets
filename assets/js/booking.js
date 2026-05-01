@@ -20,6 +20,7 @@ let selectedBags = {};
 let selectedSeats = {};
 let currentSeatMapPassenger = null;
 let currentSeatMapSegment = null;
+let savedTravelers = [];
 
 function loadFlightData() {
     const flightData = localStorage.getItem('selectedFlight');
@@ -35,13 +36,37 @@ function renderPassengers(count) {
     let html = '';
     for (let i = 1; i <= count; i++) {
         html += `
-            <div class="passenger-form">
+            <div class="passenger-form" id="passenger-card-${i}">
                 <div class="passenger-header">
                     <span class="passenger-number">Passenger ${i}</span>
-                    <span class="passenger-type">Adult</span>
+                    <span class="passenger-type" id="pax-type-badge-${i}">Adult</span>
+                </div>
+                <div class="passenger-type-select">
+                    <span class="passenger-type-label">Type:</span>
+                    <select class="search-input" id="pax-type-${i}" onchange="onPassengerTypeChange(${i})">
+                        <option value="adult">Adult</option>
+                        <option value="child">Child (2-11)</option>
+                        <option value="infant_without_seat">Infant (0-1)</option>
+                    </select>
+                </div>
+                <div class="saved-traveler-bar">
+                    <span class="passenger-type-label">Use saved traveler:</span>
+                    <select class="search-input" id="saved-traveler-select-${i}" onchange="applyTraveler(${i}, this.value)">
+                        <option value="">— Enter manually —</option>
+                    </select>
                 </div>
                 <div class="passenger-fields">
                     <div class="form-row">
+                        <div class="form-group">
+                            <label class="field-label" for="title-${i}">Title</label>
+                            <select class="search-input" id="title-${i}" required>
+                                <option value="">Select</option>
+                                <option value="mr">Mr</option>
+                                <option value="mrs">Mrs</option>
+                                <option value="ms">Ms</option>
+                                <option value="miss">Miss</option>
+                            </select>
+                        </div>
                         <div class="form-group">
                             <label class="field-label" for="first-name-${i}">First Name</label>
                             <input type="text" class="search-input" id="first-name-${i}" required>
@@ -53,11 +78,26 @@ function renderPassengers(count) {
                     </div>
                     <div class="form-row">
                         <div class="form-group">
+                            <label class="field-label" for="dob-${i}">Date of Birth</label>
+                            <input type="date" class="search-input" id="dob-${i}" required>
+                            <span class="field-error" id="dob-error-${i}" style="display:none;"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="field-label" for="gender-${i}">Gender</label>
+                            <select class="search-input" id="gender-${i}" required>
+                                <option value="">Select</option>
+                                <option value="m">Male</option>
+                                <option value="f">Female</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
                             <label class="field-label" for="email-${i}">Email</label>
                             <input type="email" class="search-input" id="email-${i}" required>
                         </div>
                         <div class="form-group">
-                            <label class="field-label" for="phone-${i}">Phone</label>
+                            <label class="field-label" for="phone-${i}">Phone Number</label>
                             <input type="tel" class="search-input" id="phone-${i}" required>
                         </div>
                     </div>
@@ -67,8 +107,8 @@ function renderPassengers(count) {
                             <input type="text" class="search-input" id="passport-${i}" required>
                         </div>
                         <div class="form-group">
-                            <label class="field-label" for="nationality-${i}">Nationality</label>
-                            <input type="text" class="search-input" id="nationality-${i}" required>
+                            <label class="field-label" for="issuing-country-${i}">Issuing Country</label>
+                            <input type="text" class="search-input" id="issuing-country-${i}" placeholder="e.g. SAU" maxlength="3" required>
                         </div>
                     </div>
                 </div>
@@ -78,24 +118,181 @@ function renderPassengers(count) {
     container.innerHTML = html;
 }
 
-async function fetchAndAutoFillUser() {
-    try {
-        const res = await fetch('../backend/api/auth/status.php');
-        const data = await res.json();
-        if (!data.authenticated || !data.user) return;
+function onPassengerTypeChange(index) {
+    const type = document.getElementById(`pax-type-${index}`).value;
+    const badge = document.getElementById(`pax-type-badge-${index}`);
+    badge.textContent = type === 'child' ? 'Child' : type === 'infant_without_seat' ? 'Infant' : 'Adult';
+}
 
-        const firstName = document.getElementById('first-name-1');
-        const lastName = document.getElementById('last-name-1');
-        const email = document.getElementById('email-1');
-        const phone = document.getElementById('phone-1');
+function validateDob(index, type) {
+    const dobInput = document.getElementById(`dob-${index}`);
+    const errorEl = document.getElementById(`dob-error-${index}`);
+    const dobValue = dobInput.value;
 
-        if (firstName && data.user.first_name) firstName.value = data.user.first_name;
-        if (lastName && data.user.last_name) lastName.value = data.user.last_name;
-        if (email && data.user.email) email.value = data.user.email;
-        if (phone && data.user.phone_number) phone.value = data.user.phone_number;
-    } catch (err) {
-        console.error('Auto-fill failed', err);
+    if (!dobValue) {
+        showFieldError(errorEl, 'Date of birth is required');
+        return false;
     }
+
+    const dob = new Date(dobValue);
+    const now = new Date();
+    const age = now.getFullYear() - dob.getFullYear();
+
+    if (type === 'child') {
+        if (age < 2 || age >= 12) {
+            showFieldError(errorEl, 'Child must be between 2 and 11 years old');
+            return false;
+        }
+    } else if (type === 'infant_without_seat') {
+        if (age < 0 || age >= 2) {
+            showFieldError(errorEl, 'Infant must be under 2 years old');
+            return false;
+        }
+    }
+
+    hideFieldError(errorEl);
+    return true;
+}
+
+function luhnCheck(num) {
+    let sum = 0;
+    let alt = false;
+    for (let i = num.length - 1; i >= 0; i--) {
+        let n = parseInt(num.charAt(i), 10);
+        if (alt) {
+            n *= 2;
+            if (n > 9) n -= 9;
+        }
+        sum += n;
+        alt = !alt;
+    }
+    return sum % 10 === 0;
+}
+
+function validateCard() {
+    const numberEl = document.getElementById('card-number');
+    const errorEl = document.getElementById('card-number-error');
+    const num = numberEl.value.replace(/\s/g, '');
+
+    if (num.length < 13 || num.length > 19) {
+        showFieldError(errorEl, 'Card number must be 13-19 digits');
+        return false;
+    }
+    if (!/^\d+$/.test(num)) {
+        showFieldError(errorEl, 'Card number must contain only digits');
+        return false;
+    }
+    if (!luhnCheck(num)) {
+        showFieldError(errorEl, 'Invalid card number');
+        return false;
+    }
+
+    hideFieldError(errorEl);
+    return true;
+}
+
+function validateExpiry() {
+    const el = document.getElementById('card-expiry');
+    const errorEl = document.getElementById('card-expiry-error');
+    const val = el.value;
+
+    const match = val.match(/^(\d{2})\/(\d{2})$/);
+    if (!match) {
+        showFieldError(errorEl, 'Use format MM/YY');
+        return false;
+    }
+
+    const month = parseInt(match[1], 10);
+    const year = parseInt(match[2], 10) + 2000;
+
+    if (month < 1 || month > 12) {
+        showFieldError(errorEl, 'Invalid month');
+        return false;
+    }
+
+    const now = new Date();
+    const expiry = new Date(year, month);
+    if (expiry <= now) {
+        showFieldError(errorEl, 'Card has expired');
+        return false;
+    }
+
+    hideFieldError(errorEl);
+    return true;
+}
+
+function validateCvv() {
+    const el = document.getElementById('card-cvv');
+    const errorEl = document.getElementById('card-cvv-error');
+    const val = el.value;
+
+    if (!/^\d{3,4}$/.test(val)) {
+        showFieldError(errorEl, 'CVV must be 3 or 4 digits');
+        return false;
+    }
+
+    hideFieldError(errorEl);
+    return true;
+}
+
+function showFieldError(el, msg) {
+    el.textContent = msg;
+    el.style.display = 'block';
+}
+
+function hideFieldError(el) {
+    el.textContent = '';
+    el.style.display = 'none';
+}
+
+async function loadSavedTravelers() {
+    try {
+        const res = await fetch('../backend/api/checkout_travelers.php');
+        const data = await res.json();
+        if (data.success && data.travelers && data.travelers.length > 0) {
+            savedTravelers = data.travelers;
+            const flight = loadFlightData();
+            const count = flight ? (flight.passengers || 1) : 1;
+            for (let i = 1; i <= count; i++) {
+                const select = document.getElementById(`saved-traveler-select-${i}`);
+                if (!select) continue;
+                data.travelers.forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t.id;
+                    opt.textContent = `${t.first_name} ${t.last_name} (${t.date_of_birth})`;
+                    select.appendChild(opt);
+                });
+            }
+        }
+
+        const userRes = await fetch('../backend/api/auth/status.php');
+        const userData = await userRes.json();
+        if (userData.authenticated && userData.user) {
+            const flight = loadFlightData();
+            const count = flight ? (flight.passengers || 1) : 1;
+            for (let i = 1; i <= count; i++) {
+                const emailEl = document.getElementById(`email-${i}`);
+                const phoneEl = document.getElementById(`phone-${i}`);
+                if (emailEl && userData.user.email) emailEl.value = userData.user.email;
+                if (phoneEl && userData.user.phone_number) phoneEl.value = userData.user.phone_number;
+            }
+        }
+    } catch (err) {
+        console.error('Failed to load saved travelers', err);
+    }
+}
+
+function applyTraveler(index, travelerId) {
+    const traveler = savedTravelers.find(t => t.id == travelerId);
+    if (!traveler) return;
+
+    document.getElementById(`first-name-${index}`).value = traveler.first_name || '';
+    document.getElementById(`last-name-${index}`).value = traveler.last_name || '';
+    document.getElementById(`dob-${index}`).value = traveler.date_of_birth || '';
+    document.getElementById(`gender-${index}`).value = traveler.gender || '';
+    document.getElementById(`passport-${index}`).value = traveler.passport_number || '';
+    document.getElementById(`issuing-country-${index}`).value = traveler.issuing_country || '';
+    document.getElementById(`title-${index}`).value = traveler.gender === 'f' ? 'ms' : 'mr';
 }
 
 function populateFlightSummary(flight) {
@@ -263,11 +460,12 @@ function updateTotal() {
     if (!flightData) return;
     
     const flight = JSON.parse(flightData);
-    const basePrice = parseFloat(flight.price.total);
+    const flightTotal = parseFloat(flight.price.total);
     const currency = flight.price.currency || 'SAR';
     
-    const taxes = Math.round(basePrice * 0.15);
-    let total = basePrice + taxes;
+    const taxes = flight.price.tax_amount ? parseFloat(flight.price.tax_amount) : Math.round(flightTotal * 0.15 / 1.15);
+    const basePrice = flightTotal - taxes;
+    let total = flightTotal;
     
     document.getElementById('price-fare').textContent = `${currency} ${basePrice.toFixed(2)}`;
     document.getElementById('price-taxes').textContent = `${currency} ${taxes.toFixed(2)}`;
@@ -448,43 +646,65 @@ function formatExpiry(value) {
     return v;
 }
 
-function generatePNR() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let pnr = 'SKB';
-    for (let i = 0; i < 5; i++) {
-        pnr += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return pnr;
-}
-
 // ========================
 // Event Handlers
 // ========================
 
 document.getElementById('booking-form').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
-    const requiredFields = this.querySelectorAll('input[required]');
-    let valid = true;
-    requiredFields.forEach(field => {
-        if (!field.value.trim()) valid = false;
-    });
-    
-    if (!valid) {
-        alert('Please fill in all required fields');
-        return;
-    }
+
+    const cardValid = validateCard();
+    const expiryValid = validateExpiry();
+    const cvvValid = validateCvv();
+
+    if (!cardValid || !expiryValid || !cvvValid) return;
 
     const flight = loadFlightData();
     const passengerCount = flight.passengers || 1;
 
+    for (let i = 1; i <= passengerCount; i++) {
+        const type = document.getElementById(`pax-type-${i}`).value;
+        const dobValid = validateDob(i, type);
+        if (!dobValid) return;
+
+        const title = document.getElementById(`title-${i}`).value;
+        if (!title) {
+            alert('Please select title for Passenger ' + i);
+            return;
+        }
+
+        const gender = document.getElementById(`gender-${i}`).value;
+        if (!gender) {
+            alert('Please select gender for Passenger ' + i);
+            return;
+        }
+
+        const email = document.getElementById(`email-${i}`).value.trim();
+        if (!email) {
+            alert('Please enter email for Passenger ' + i);
+            return;
+        }
+
+        const phone = document.getElementById(`phone-${i}`).value.trim();
+        if (!phone) {
+            alert('Please enter phone number for Passenger ' + i);
+            return;
+        }
+    }
+
     const passengers = [];
     for (let i = 1; i <= passengerCount; i++) {
         passengers.push({
-            type: 'adult',
+            type: document.getElementById(`pax-type-${i}`).value,
+            title: document.getElementById(`title-${i}`).value,
             given_name: document.getElementById(`first-name-${i}`).value.trim(),
             family_name: document.getElementById(`last-name-${i}`).value.trim(),
+            born_on: document.getElementById(`dob-${i}`).value,
+            gender: document.getElementById(`gender-${i}`).value,
+            email: document.getElementById(`email-${i}`).value.trim(),
+            phone_number: document.getElementById(`phone-${i}`).value.trim(),
             passport_number: document.getElementById(`passport-${i}`).value.trim(),
+            issuing_country: document.getElementById(`issuing-country-${i}`).value.trim().toUpperCase(),
         });
     }
 
@@ -500,31 +720,43 @@ document.getElementById('booking-form').addEventListener('submit', async functio
     const totalAmount = parseFloat(totalText.replace(/[A-Z\s,]/g, ''));
     const currency = offerServices.currency || flight.price.currency || 'SAR';
 
+    const paxNames = passengers.map(p => p.given_name + p.family_name).join('');
+    const idempotencyKey = 'BOOK-' + btoa(flight.id + paxNames + Date.now()).replace(/[^a-zA-Z0-9]/g, '').substring(0, 40);
+
+    const csrfToken = document.getElementById('csrf-token').value;
+
     const submitBtn = document.querySelector('.btn-confirm');
     const originalText = submitBtn.textContent;
     submitBtn.textContent = 'Processing...';
     submitBtn.disabled = true;
 
+    const errorOverlay = document.getElementById('error-overlay');
+    errorOverlay.style.display = 'none';
+
     try {
         const res = await fetch('../backend/api/create_booking.php', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Idempotency-Key': idempotencyKey,
+            },
             body: JSON.stringify({
                 offer_id: flight.id,
                 passengers: passengers,
                 services: services,
                 payment: {
+                    type: 'balance',
                     amount: totalAmount.toFixed(2),
                     currency: currency,
                 },
-                email: passengers[0]?.given_name ? document.getElementById(`email-1`)?.value : '',
+                _csrf_token: csrfToken,
             }),
         });
 
         const data = await res.json();
 
         if (!res.ok || !data.success) {
-            throw new Error(data.error || 'Booking failed');
+            throw new Error(data.debug || data.error || 'Booking failed');
         }
 
         document.getElementById('confirmed-pnr').textContent = data.pnr || '---';
@@ -533,9 +765,19 @@ document.getElementById('booking-form').addEventListener('submit', async functio
         window.scrollTo(0, 0);
 
     } catch (err) {
-        alert('Booking failed: ' + err.message);
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
+
+        const errorOverlay = document.getElementById('error-overlay');
+        const errorText = document.getElementById('error-overlay-text');
+        errorText.textContent = err.message;
+        errorOverlay.style.display = 'flex';
+
+        document.getElementById('error-overlay-retry').onclick = function() {
+            errorOverlay.style.display = 'none';
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        };
     }
 });
 
@@ -553,7 +795,16 @@ document.addEventListener('DOMContentLoaded', function() {
         populateFlightSummary(flight);
         renderPassengers(flight.passengers || 1);
         updateTotal();
-        fetchAndAutoFillUser();
+        loadSavedTravelers();
+
+        fetch('../backend/api/auth/csrf_token.php')
+            .then(res => res.json())
+            .then(data => {
+                if (data.csrf_token) {
+                    document.getElementById('csrf-token').value = data.csrf_token;
+                }
+            })
+            .catch(() => {});
 
         const offerId = flight.id;
         if (offerId) {

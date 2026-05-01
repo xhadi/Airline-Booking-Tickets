@@ -43,6 +43,7 @@ CREATE TABLE booking (
     currency VARCHAR(10) NOT NULL,         
     status ENUM('pending', 'confirmed', 'cancelled', 'failed', 'refunded') DEFAULT 'pending',
     flight_snapshot JSON NOT NULL,         -- Stores the immutable flight details at time of purchase
+    passenger_count INT NOT NULL DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE

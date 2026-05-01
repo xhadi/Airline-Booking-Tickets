@@ -95,7 +95,8 @@ function renderBookings(bookings) {
         if (b.status === 'cancelled') return false;
         const snapshot = b.flight_snapshot;
         if (snapshot && snapshot.slices && snapshot.slices[0] && snapshot.slices[0].segments) {
-            const depTime = new Date(snapshot.slices[0].segments[0].departure_time);
+            const depTimeStr = snapshot.slices[0].segments[0].departure_time || snapshot.slices[0].segments[0].departing_at;
+            const depTime = new Date(depTimeStr);
             return depTime > now || b.status === 'pending' || b.status === 'confirmed';
         }
         return b.status === 'pending' || b.status === 'confirmed';
@@ -122,11 +123,17 @@ function renderActiveBookings(bookings) {
         if (flight && flight.slices && flight.slices[0] && flight.slices[0].segments) {
             const segments = flight.slices[0].segments;
             const first = segments[0], last = segments[segments.length - 1];
-            origin = first.origin;
-            dest = last.destination;
-            depTime = new Date(first.departure_time).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-            arrTime = new Date(last.arrival_time).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-            airline = first.carrier_name || first.carrier_code;
+            
+            origin = typeof first.origin === 'object' ? first.origin.iata_code : first.origin;
+            dest = typeof last.destination === 'object' ? last.destination.iata_code : last.destination;
+            
+            const depTimeStr = first.departure_time || first.departing_at;
+            const arrTimeStr = last.arrival_time || last.arriving_at;
+            
+            depTime = new Date(depTimeStr).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            arrTime = new Date(arrTimeStr).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            
+            airline = first.carrier_name || (first.operating_carrier ? first.operating_carrier.name : '') || first.carrier_code || (first.operating_carrier ? first.operating_carrier.iata_code : '') || 'Unknown Airline';
             const stops = segments.length - 1;
             stopsText = stops === 0 ? 'Direct' : `${stops} Stop${stops > 1 ? 's' : ''}`;
         }
@@ -227,14 +234,18 @@ function getRoute(snapshot) {
     if (snapshot && snapshot.slices && snapshot.slices[0] && snapshot.slices[0].segments) {
         const first = snapshot.slices[0].segments[0];
         const last = snapshot.slices[0].segments[snapshot.slices[0].segments.length - 1];
-        return `${first.origin} → ${last.destination}`;
+        
+        const origin = typeof first.origin === 'object' ? first.origin.iata_code : first.origin;
+        const dest = typeof last.destination === 'object' ? last.destination.iata_code : last.destination;
+        
+        return `${origin} → ${dest}`;
     }
     return '---';
 }
 
 function getDepartureDate(snapshot) {
     if (snapshot && snapshot.slices && snapshot.slices[0] && snapshot.slices[0].segments) {
-        const time = snapshot.slices[0].segments[0].departure_time;
+        const t = snapshot.slices[0].segments[0].departure_time || snapshot.slices[0].segments[0].departing_at;
         return new Date(time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
     return '---';

@@ -921,14 +921,114 @@
 
 /* Aircraft nose indicator */
 .aircraft-nose {
-  width: 60%;
-  height: 2rem;
-  border-radius: 50% 50% 0 0;
-  background-color: #F3F4F6;
-  margin-bottom: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.6875rem;
-  color: #9CA3AF;
+    width: 60%;
+    height: 2rem;
+    border-radius: 50% 50% 0 0;
+    background-color: #F3F4F6;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6875rem;
+    color: #9CA3AF;
+}
+
+.field-error {
+    display: block;
+    font-size: 0.75rem;
+    color: #DC2626;
+    margin-top: 0.25rem;
+}
+
+.passenger-type-select {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: #F9FAFB;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.passenger-type-select .search-input {
+    max-width: 200px;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.saved-traveler-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: #EFF6FF;
+    border-bottom: 1px solid #DBEAFE;
+}
+
+.saved-traveler-bar .search-input {
+    max-width: 280px;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.passenger-type-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6B7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.error-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.error-overlay-content {
+    background-color: #fff;
+    border-radius: 0.75rem;
+    padding: 2rem;
+    text-align: center;
+    max-width: 400px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.error-overlay-content .material-symbols-outlined {
+    font-size: 3rem;
+    color: #DC2626;
+    margin-bottom: 1rem;
+}
+
+.error-overlay-content p {
+    font-size: 0.875rem;
+    color: #374151;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.btn-retry {
+    display: inline-flex;
+    align-items: center;
+    background-color: #1E40AF;
+    color: #fff;
+    border: none;
+    border-radius: 0.375rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-retry:hover {
+    background-color: #1E3A8A;
 }
