@@ -1,4 +1,25 @@
         // --- 1. Autocomplete Logic for Airports (from index.html) ---
+        // Alert modal function
+        function showAlert(title, message) {
+            const existing = document.querySelector('.alert-modal-overlay');
+            if (existing) existing.remove();
+            
+            const overlay = document.createElement('div');
+            overlay.className = 'alert-modal-overlay';
+            overlay.innerHTML = `
+                <div class="alert-modal">
+                    <div class="alert-modal-icon error">!</div>
+                    <div class="alert-modal-title">${title}</div>
+                    <div class="alert-modal-message">${message}</div>
+                    <button class="alert-modal-btn">OK</button>
+                </div>
+            `;
+            
+            overlay.querySelector('.alert-modal-btn').onclick = () => overlay.remove();
+            overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+            document.body.appendChild(overlay);
+        }
+        
         const airports = [
             { code: 'JFK', name: 'New York (JFK)' },
             { code: 'LHR', name: 'London Heathrow (LHR)' },
@@ -195,13 +216,19 @@
             
             // Ensure inputs are strictly set
             if (!fromCode || !toCode) {
-                alert("Please select a valid airport from the dropdown list.");
+                showAlert("Missing Airport", "Please select a valid airport from the dropdown list.");
+                btn.innerText = ogText;
+                return;
+            }
+
+            if (fromCode === toCode) {
+                showAlert("Invalid Route", "Departure and destination airports cannot be the same.");
                 btn.innerText = ogText;
                 return;
             }
 
             if (!rawDates) {
-                alert("Please select travel dates.");
+                showAlert("Missing Dates", "Please select travel dates.");
                 btn.innerText = ogText;
                 return;
             }
@@ -216,6 +243,14 @@
                 outboundDate = splitDates[0] || '';
                 returnDate = splitDates[1] || '';
             }
+
+            // Round-trip requires return date
+            if (tripType === 'round-trip' && !returnDate) {
+                showAlert("Missing Return Date", "Please select a return date for round-trip flights.");
+                btn.innerText = ogText;
+                return;
+            }
+
             document.getElementById('outbound-date').value = outboundDate;
             document.getElementById('return-date').value = returnDate;
 
@@ -231,6 +266,13 @@
             // Build passenger Array logic
             const passengers = [];
             const adultCount = parseInt(document.getElementById('adults-input').value);
+            
+            if (!adultCount || adultCount < 1) {
+                showAlert("Missing Passenger", "Please add at least one adult passenger.");
+                btn.innerText = ogText;
+                return;
+            }
+            
             for(let i = 0; i < adultCount; i++) {
                 passengers.push({ type: 'adult' });
             }
