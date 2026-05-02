@@ -562,20 +562,37 @@
     font-weight: 400;
 }
 
-/* Historical Table */
-.historical-table {
-    font-size: 0.875rem;
+/* Historical Flights - Card Style */
+.historical-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-.historical-row {
+.historical-top {
     display: flex;
     justify-content: space-between;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid #F3F4F6;
+    align-items: center;
+    margin-bottom: 0.75rem;
 }
 
-.historical-row:last-child {
-    border-bottom: none;
+.historical-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.historical-price {
+    text-align: right;
+    font-weight: 600;
+}
+
+.historical-price .passenger-count {
+    font-size: 0.75rem;
+    color: #6B7280;
+    font-weight: 400;
 }
 
 /* Account Settings */

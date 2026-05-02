@@ -5,13 +5,20 @@ const airportNames = {
     'CDG': 'Paris Charles de Gaulle',
     'JED': 'Jeddah',
     'RUH': 'Riyadh',
+    'DMM': 'Dammam',
     'LAX': 'Los Angeles',
     'NRT': 'Tokyo Narita',
     'SIN': 'Singapore',
     'SYD': 'Sydney',
     'YYZ': 'Toronto',
     'FRA': 'Frankfurt',
-    'MAD': 'Madrid'
+    'MAD': 'Madrid',
+    'AMS': 'Amsterdam',
+    'IST': 'Istanbul',
+    'BKK': 'Bangkok',
+    'HKG': 'Hong Kong',
+    'MLE': 'Malé',
+    'CAI': 'Cairo'
 };
 
 // State for add-ons

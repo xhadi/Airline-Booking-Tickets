@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Search Flights - SkyBound</title>
+    
+    <!-- Common styles -->
+    <link rel="stylesheet" href="../assets/css/common.css">
+    <!-- Page-specific styles -->
+    <link rel="stylesheet" href="../assets/css/flight-results.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="site-header" data-purpose="site-header">
+        <nav aria-label="Top" class="container">
+            <div class="nav-wrapper">
+                <div class="logo-container">
+                    <a class="logo-link" href="../index.html">
+                        <svg class="logo-icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M21 16.5c0 .38-.21.71-.53.88l-7.97 4.13a1.503 1.503 0 01-1.5 0l-7.97-4.13c-.32-.17-.53-.5-.53-.88V7.5c0-.38.21-.71.53-.88l7.97-4.13a1.503 1.503 0 011.5 0l7.97 4.13c.32.17.53.5.53.88v9z"></path>
+                        </svg>
+                        <span class="logo-text">SkyBound</span>
+                    </a>
+                </div>
+
+                <!-- Navigation Links -->
+                <div class="desktop-nav">
+                    <a class="nav-link" href="../index.html">Home</a>
+                    <a class="nav-link" href="search.html">Flights</a>
+                    <a class="nav-link" href="#">Contact</a>
+                    <a class="nav-link" href="profile.html">Profile</a>
+                </div>
+
+                <!-- Mobile Menu -->
+                <div class="mobile-menu-container">
+                    <button class="mobile-menu-btn" data-purpose="mobile-menu-toggle" type="button">
+                        <span class="sr-only">Open menu</span>
+                        <svg style="height: 1.5rem; width: 1.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path d="M4 6h16M4 12h16m-7 6h7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container" style="padding-top: 2rem;">
+            <!-- SearchForm -->
+            <div class="search-form-container" data-purpose="flight-search-container">
+                <form class="search-form" id="flight-search-form">
+                    <div class="trip-type-toggles">
+                        <label class="radio-label">
+                            <input checked class="radio-input" id="type-round-trip" name="trip-type" type="radio" value="round-trip"/>
+                            <span class="radio-text">Round-trip</span>
+                        </label>
+                        <label class="radio-label">
+                            <input class="radio-input" id="type-one-way" name="trip-type" type="radio" value="one-way"/>
+                            <span class="radio-text">One-way</span>
+                        </label>
+                    </div>
+
+                    <div class="search-fields-row">
+                        <div class="field-group autocomplete-wrapper">
+                            <label class="field-label" for="from-display">From</label>
+                            <input class="search-input" id="from-display" placeholder="City or Airport" required type="text" autocomplete="off"/>
+                            <input type="hidden" id="from-code" name="from_code" required/>
+                            <div id="from-autocomplete" class="autocomplete-dropdown"></div>
+                        </div>
+
+                        <div class="field-group autocomplete-wrapper">
+                            <label class="field-label" for="to-display">To</label>
+                            <input class="search-input" id="to-display" placeholder="City or Airport" required type="text" autocomplete="off"/>
+                            <input type="hidden" id="to-code" name="to_code" required/>
+                            <div id="to-autocomplete" class="autocomplete-dropdown"></div>
+                        </div>
+
+                        <div class="field-group field-group-large">
+                            <label class="field-label" for="travel-dates">Travel Dates</label>
+                            <div class="input-with-icon">
+                                <input class="search-input" id="travel-dates" placeholder="Departure - Return" readonly required type="text"/>
+                                <input type="hidden" id="outbound-date" name="outbound_date" />
+                                <input type="hidden" id="return-date" name="return_date" />
+                                <span class="material-symbols-outlined input-icon">calendar_month</span>
+                            </div>
+                        </div>
+
+                        <div class="field-group travelers-wrapper">
+                            <label class="field-label">Travelers</label>
+                            <button class="search-input travelers-btn" id="travelers-btn" type="button">
+                                <span id="travelers-summaryText">1 Adult</span>
+                                <span class="material-symbols-outlined" style="color: #9CA3AF; font-size: 0.875rem;">keyboard_arrow_down</span>
+                            </button>
+
+                            <div aria-hidden="true" class="travelers-dropdown" id="travelers-dropdown">
+                                <div class="travelers-dropdown-content">
+                                    <div class="traveler-type">
+                                        <div>
+                                            <p class="traveler-name">Adult</p>
+                                            <p class="traveler-age">Age 18+</p>
+                                        </div>
+                                        <div class="traveler-controls">
+                                            <button class="traveler-btn" onclick="changeCount('adults', -1)" type="button">—</button>
+                                            <span class="traveler-count" id="adults-count">1</span>
+                                            <input id="adults-input" name="adults" type="hidden" value="1"/>
+                                            <button class="traveler-btn plus" onclick="changeCount('adults', 1)" type="button">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="traveler-type">
+                                        <div>
+                                            <p class="traveler-name">Children</p>
+                                            <p class="traveler-age">Age 0–17</p>
+                                        </div>
+                                        <div class="traveler-controls">
+                                            <button class="traveler-btn" onclick="changeCount('children', -1)" type="button">—</button>
+                                            <span class="traveler-count" id="children-count">0</span>
+                                            <input id="children-input" name="children" type="hidden" value="0"/>
+                                            <button class="traveler-btn plus" onclick="changeCount('children', 1)" type="button">+</button>
+                                        </div>
+                                    </div>
+                                    <div id="child-ages-container" style="display: none; margin-top: 0.5rem;">
+                                        <p style="font-size: 0.75rem; font-weight: 700; color: #374151; margin-bottom: 0.5rem;">Child Ages</p>
+                                        <div id="child-ages-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+                                    </div>
+                                </div>
+                                <div class="travelers-footer">
+                                    <button class="btn-done" id="travelers-done" type="button">Done</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label" for="cabin-class">Class</label>
+                            <select class="search-input" id="cabin-class" name="cabin-class" required>
+                                <option value="economy">Economy</option>
+                                <option value="premium-economy">Premium</option>
+                                <option value="business">Business</option>
+                                <option value="first">First</option>
+                            </select>
+                        </div>
+
+                        <div class="search-btn-wrapper">
+                            <button class="btn-search" type="submit">Search</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Flight Results Section (hidden initially) -->
+        <section class="flight-results-section container" data-purpose="flight-results" style="display: none;">
+            <div class="results-header">
+                <div>
+                    <h1 class="results-title">Available Flights</h1>
+                    <p class="results-count" id="results-count-text">Found 0 flights</p>
+                </div>
+            </div>
+            
+            <div class="flight-cards-container" id="flight-cards-container">
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer" data-purpose="site-footer">
+        <div class="container footer-container">
+            <div class="footer-links">
+                <span class="footer-link">Privacy Policy</span>
+                <span class="footer-link">Terms of Service</span>
+            </div>
+            <div class="footer-copyright-wrapper">
+                <p class="footer-copyright">
+                    © 2023 SkyBound Airline Systems. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../assets/js/home.js"></script>
+    <script src="../assets/js/flight-results.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script>
+// Override fetchFlights to show results section on search page
+const originalFetchFlights = window.fetchFlights;
+window.fetchFlights = function() {
+    const resultsSection = document.querySelector('[data-purpose="flight-results"]');
+    if (resultsSection) {
+        resultsSection.style.display = 'block';
+    }
+    if (originalFetchFlights) {
+        originalFetchFlights();
+    }
+};
+</script>
+</body>
+</html>

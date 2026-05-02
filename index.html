@@ -31,7 +31,7 @@
                     <!-- Navigation Links -->
                     <div class="desktop-nav">
                         <a class="nav-link" href="#">Home</a>
-                        <a class="nav-link" href="#">Flights</a>
+                        <a class="nav-link" href="pages/search.html">Flights</a>
                         <a class="nav-link" href="#">Contact</a>
                          <a class="nav-link" href="pages/profile.html">Profile</a>
                     </div>
@@ -51,121 +51,78 @@
         <!-- END: MainHeader -->
 
         <main>
-            <!-- BEGIN: HeroSection -->
-            <section class="hero-section" data-purpose="hero-banner">
-                <div class="hero-bg">
-                    <img alt="SkyBound Airplane in Flight" class="hero-image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiVFDYJOA7EGPEppxPGcB8AI9hLT3PjSrAkcX3MGkoXpzJgTf2Cks07D7sXTmy4IOu1X-hstHZM6CPw5VGTtwfMLjRtyI0OD63-OE3HYCOnrgA4KJ1FbYd1h9c-ZQUp7vRARZygupKVsp-xI6yKk5UmbuVro_sOejYxi_6AeTjbP43v7vnjuxnXnCWWdFWkFUpidxukp5Ab8xPFZdGj6f9kVjCBGXohDxRecp2LFK1iAlYwzInSWQEw6D69pLU3DA8uAeCJQai4RA"/>
-                    <div class="hero-overlay"></div>
-                </div>
-
-                <div class="hero-content container">
-                    <div class="hero-title-wrapper">
-                        <h1 class="hero-title">Where your journey begins</h1>
-                        <p class="hero-subtitle">Find the best flights to your favorite destinations.</p>
+            <!-- BEGIN: Destinations Grid -->
+            <section class="destinations-section">
+                <div class="container">
+                    <div class="destinations-header">
+                        <h1 class="destinations-title">Explore Popular Destinations</h1>
+                        <p class="destinations-subtitle">Choose your next adventure</p>
                     </div>
-
-                    <!-- BEGIN: SearchForm -->
-                    <div class="search-form-container" data-purpose="flight-search-container">
-                        <form class="search-form" id="flight-search-form">
-                            <div class="trip-type-toggles">
-                                <label class="radio-label">
-                                    <input checked class="radio-input" id="type-round-trip" name="trip-type" type="radio" value="round-trip"/>
-                                    <span class="radio-text">Round-trip</span>
-                                </label>
-                                <label class="radio-label">
-                                    <input class="radio-input" id="type-one-way" name="trip-type" type="radio" value="one-way"/>
-                                    <span class="radio-text">One-way</span>
-                                </label>
+                    <div class="destinations-grid">
+                        <div class="destination-card" data-city="RUH" data-name="Riyadh" data-folder="Riyadh" data-images="riyadh01.jpg,riyadh02.jpg,riyadh03.jpg,riyadh04.jpg">
+                            <img src="assets/images/Riyadh/riyadh01.jpg" alt="Riyadh">
+                            <button class="img-arrow img-arrow-left">&lsaquo;</button>
+                            <button class="img-arrow img-arrow-right">&rsaquo;</button>
+                            <div class="destination-overlay">
+                                <span class="destination-country">Saudi Arabia</span>
+                                <h3 class="destination-name">Riyadh</h3>
+                                <a href="pages/search.html" class="btn-explore" data-city="RUH" data-name="Riyadh">Explore</a>
                             </div>
-
-                            <div class="search-fields-row">
-                                <div class="field-group autocomplete-wrapper">
-                                    <label class="field-label" for="from-display">From</label>
-                                    <input class="search-input" id="from-display" placeholder="City or Airport" required type="text" autocomplete="off"/>
-                                    <input type="hidden" id="from-code" name="from_code" required/>
-                                    <div id="from-autocomplete" class="autocomplete-dropdown"></div>
-                                </div>
-
-                                <div class="field-group autocomplete-wrapper">
-                                    <label class="field-label" for="to-display">To</label>
-                                    <input class="search-input" id="to-display" placeholder="City or Airport" required type="text" autocomplete="off"/>
-                                    <input type="hidden" id="to-code" name="to_code" required/>
-                                    <div id="to-autocomplete" class="autocomplete-dropdown"></div>
-                                </div>
-
-                                <div class="field-group field-group-large">
-                                    <label class="field-label" for="travel-dates">Travel Dates</label>
-                                    <div class="input-with-icon">
-                                        <input class="search-input" id="travel-dates" placeholder="Departure - Return" readonly required type="text"/>
-                                        <input type="hidden" id="outbound-date" name="outbound_date" />
-                                        <input type="hidden" id="return-date" name="return_date" />
-                                        <span class="material-symbols-outlined input-icon">calendar_month</span>
-                                    </div>
-                                </div>
-
-                                <div class="field-group travelers-wrapper">
-                                    <label class="field-label">Travelers</label>
-                                    <button class="search-input travelers-btn" id="travelers-btn" type="button">
-                                        <span id="travelers-summaryText">1 Adult</span>
-                                        <span class="material-symbols-outlined" style="color: #9CA3AF; font-size: 0.875rem;">keyboard_arrow_down</span>
-                                    </button>
-
-                                    <div aria-hidden="true" class="travelers-dropdown" id="travelers-dropdown">
-                                        <div class="travelers-dropdown-content">
-                                            <div class="traveler-type">
-                                                <div>
-                                                    <p class="traveler-name">Adult</p>
-                                                    <p class="traveler-age">Age 18+</p>
-                                                </div>
-                                                <div class="traveler-controls">
-                                                    <button class="traveler-btn" onclick="changeCount('adults', -1)" type="button">—</button>
-                                                    <span class="traveler-count" id="adults-count">1</span>
-                                                    <input id="adults-input" name="adults" type="hidden" value="1"/>
-                                                    <button class="traveler-btn plus" onclick="changeCount('adults', 1)" type="button">+</button>
-                                                </div>
-                                            </div>
-                                            <div class="traveler-type">
-                                                <div>
-                                                    <p class="traveler-name">Children</p>
-                                                    <p class="traveler-age">Age 0–17</p>
-                                                </div>
-                                                <div class="traveler-controls">
-                                                    <button class="traveler-btn" onclick="changeCount('children', -1)" type="button">—</button>
-                                                    <span class="traveler-count" id="children-count">0</span>
-                                                    <input id="children-input" name="children" type="hidden" value="0"/>
-                                                    <button class="traveler-btn plus" onclick="changeCount('children', 1)" type="button">+</button>
-                                                </div>
-                                            </div>
-                                            <div id="child-ages-container" style="display: none; margin-top: 0.5rem;">
-                                                <p style="font-size: 0.75rem; font-weight: 700; color: #374151; margin-bottom: 0.5rem;">Child Ages</p>
-                                                <div id="child-ages-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
-                                            </div>
-                                        </div>
-                                        <div class="travelers-footer">
-                                            <button class="btn-done" id="travelers-done" type="button">Done</button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="field-group">
-                                    <label class="field-label" for="cabin-class">Class</label>
-                                    <select class="search-input" id="cabin-class" name="cabin-class" required>
-                                        <option value="economy">Economy</option>
-                                        <option value="premium-economy">Premium</option>
-                                        <option value="business">Business</option>
-                                        <option value="first">First</option>
-                                    </select>
-                                </div>
-
-                                <div class="search-btn-wrapper">
-                                    <button class="btn-search" type="submit">Search</button>
-                                </div>
+                        </div>
+                        <div class="destination-card" data-city="DXB" data-name="Dubai" data-folder="Dubai" data-images="dub01.jpg,dub02.jpg,dub03.jpg,dub04.jpg">
+                            <img src="assets/images/Dubai/dub01.jpg" alt="Dubai">
+                            <button class="img-arrow img-arrow-left">&lsaquo;</button>
+                            <button class="img-arrow img-arrow-right">&rsaquo;</button>
+                            <div class="destination-overlay">
+                                <span class="destination-country">UAE</span>
+                                <h3 class="destination-name">Dubai</h3>
+                                <a href="pages/search.html" class="btn-explore" data-city="DXB" data-name="Dubai">Explore</a>
                             </div>
-                        </form>
+                        </div>
+                        <div class="destination-card" data-city="LHR" data-name="London" data-folder="London" data-images="lon01.jpg,lon02.jpg,lon03.jpg,lon04.jpg">
+                            <img src="assets/images/London/lon01.jpg" alt="London">
+                            <button class="img-arrow img-arrow-left">&lsaquo;</button>
+                            <button class="img-arrow img-arrow-right">&rsaquo;</button>
+                            <div class="destination-overlay">
+                                <span class="destination-country">United Kingdom</span>
+                                <h3 class="destination-name">London</h3>
+                                <a href="pages/search.html" class="btn-explore" data-city="LHR" data-name="London">Explore</a>
+                            </div>
+                        </div>
+                        <div class="destination-card" data-city="NRT" data-name="Tokyo" data-folder="Tokyo" data-images="tok01.jpg,tok02.jpg,tok03.jpg,tok04.jpg">
+                            <img src="assets/images/Tokyo/tok01.jpg" alt="Tokyo">
+                            <button class="img-arrow img-arrow-left">&lsaquo;</button>
+                            <button class="img-arrow img-arrow-right">&rsaquo;</button>
+                            <div class="destination-overlay">
+                                <span class="destination-country">Japan</span>
+                                <h3 class="destination-name">Tokyo</h3>
+                                <a href="pages/search.html" class="btn-explore" data-city="NRT" data-name="Tokyo">Explore</a>
+                            </div>
+                        </div>
+                        <div class="destination-card" data-city="CAI" data-name="Cairo" data-folder="Cairo" data-images="cairo01.jpg,cairo02.jpg,cairo03.jpg,cairo04.jpg">
+                            <img src="assets/images/Cairo/cairo01.jpg" alt="Cairo">
+                            <button class="img-arrow img-arrow-left">&lsaquo;</button>
+                            <button class="img-arrow img-arrow-right">&rsaquo;</button>
+                            <div class="destination-overlay">
+                                <span class="destination-country">Egypt</span>
+                                <h3 class="destination-name">Cairo</h3>
+                                <a href="pages/search.html" class="btn-explore" data-city="CAI" data-name="Cairo">Explore</a>
+                            </div>
+                        </div>
+                        <div class="destination-card" data-city="CDG" data-name="Paris" data-folder="Paris" data-images="paris01.jpg,paris02.jpg,paris03.jpg,paris04.jpg">
+                            <img src="assets/images/Paris/paris01.jpg" alt="Paris">
+                            <button class="img-arrow img-arrow-left">&lsaquo;</button>
+                            <button class="img-arrow img-arrow-right">&rsaquo;</button>
+                            <div class="destination-overlay">
+                                <span class="destination-country">France</span>
+                                <h3 class="destination-name">Paris</h3>
+                                <a href="pages/search.html" class="btn-explore" data-city="CDG" data-name="Paris">Explore</a>
+                            </div>
+                        </div>
                     </div>
-                    <!-- END: SearchForm -->
                 </div>
             </section>
+            <!-- END: Destinations Grid -->
 
             <!-- BEGIN: TrustSignals -->
             <section class="features-section" data-purpose="features-section">

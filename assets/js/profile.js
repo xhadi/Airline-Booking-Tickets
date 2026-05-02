@@ -92,14 +92,19 @@ function renderTravelers(travelers) {
 function renderBookings(bookings) {
     const now = new Date();
     const active = bookings.filter(b => {
-        if (b.status === 'cancelled') return false;
         const snapshot = b.flight_snapshot;
+        let depTime = null;
+        
         if (snapshot && snapshot.slices && snapshot.slices[0] && snapshot.slices[0].segments) {
             const depTimeStr = snapshot.slices[0].segments[0].departure_time || snapshot.slices[0].segments[0].departing_at;
-            const depTime = new Date(depTimeStr);
-            return depTime > now || b.status === 'pending' || b.status === 'confirmed';
+            depTime = new Date(depTimeStr);
         }
-        return b.status === 'pending' || b.status === 'confirmed';
+        
+        if (b.status === 'cancelled') return false;
+        if (b.status === 'pending') return true;
+        if (depTime && depTime > now) return true;
+        
+        return false;
     });
     
     const historical = bookings.filter(b => !active.includes(b));
@@ -172,18 +177,53 @@ function renderHistoricalBookings(bookings) {
         return;
     }
     
-    let html = '<div class="historical-table">';
-    bookings.forEach(b => {
+    let html = '';
+    bookings.forEach(booking => {
+        const flight = booking.flight_snapshot;
+        let origin = "---", dest = "---", depTime = "---", arrTime = "---", airline = "---", stopsText = "---";
+        
+        if (flight && flight.slices && flight.slices[0] && flight.slices[0].segments) {
+            const segments = flight.slices[0].segments;
+            const first = segments[0], last = segments[segments.length - 1];
+            
+            origin = typeof first.origin === 'object' ? first.origin.iata_code : first.origin;
+            dest = typeof last.destination === 'object' ? last.destination.iata_code : last.destination;
+            
+            const depTimeStr = first.departure_time || first.departing_at;
+            const arrTimeStr = last.arrival_time || last.arriving_at;
+            
+            depTime = new Date(depTimeStr).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+            arrTime = new Date(arrTimeStr).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            
+            airline = first.carrier_name || (first.operating_carrier ? first.operating_carrier.name : '') || first.carrier_code || (first.operating_carrier ? first.operating_carrier.iata_code : '') || 'Unknown Airline';
+            const stops = segments.length - 1;
+            stopsText = stops === 0 ? 'Direct' : `${stops} Stop${stops > 1 ? 's' : ''}`;
+        }
+        
+        const statusColor = getStatusColor(booking.status);
+        const statusBg = getStatusBg(booking.status);
+        
         html += `
-            <div class="historical-row">
-                <span class="historical-pnr">PNR: ${b.pnr}</span>
-                <span class="historical-route">${getRoute(b.flight_snapshot)}</span>
-                <span class="historical-date">${getDepartureDate(b.flight_snapshot)}</span>
-                <span class="historical-status" style="color: ${getStatusColor(b.status)};">${b.status}</span>
+            <div class="booking-card" style="border-left: 4px solid ${statusColor};">
+                <div class="booking-top">
+                    <div class="pnr-display" onclick="copyPNR('${booking.pnr}')" title="Click to copy">PNR: ${booking.pnr} ✓</div>
+                    <span class="booking-badge" style="background: ${statusBg}; color: ${statusColor};">${booking.status.toUpperCase()}</span>
+                </div>
+                <div class="booking-details">
+                    <div>
+                        <div class="route-display">${origin} → ${dest}</div>
+                        <div class="time-display">${depTime}</div>
+                        <div class="flight-info">${airline} • ${stopsText}</div>
+                    </div>
+                    <div class="booking-price">
+                        <div>${booking.currency} ${booking.total_price}</div>
+                        <div class="passenger-count">${booking.passenger_count} Passenger${booking.passenger_count > 1 ? 's' : ''}</div>
+                    </div>
+                </div>
             </div>
         `;
     });
-    html += '</div>';
+    
     container.innerHTML = html;
 }
 
@@ -246,7 +286,7 @@ function getRoute(snapshot) {
 function getDepartureDate(snapshot) {
     if (snapshot && snapshot.slices && snapshot.slices[0] && snapshot.slices[0].segments) {
         const t = snapshot.slices[0].segments[0].departure_time || snapshot.slices[0].segments[0].departing_at;
-        return new Date(time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        return new Date(t).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
     return '---';
 }

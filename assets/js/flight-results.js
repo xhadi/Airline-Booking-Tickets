@@ -6,13 +6,20 @@
             { code: 'CDG', name: 'Paris Charles de Gaulle (CDG)' },
             { code: 'JED', name: 'Jeddah (JED)' },
             { code: 'RUH', name: 'Riyadh (RUH)' },
+            { code: 'DMM', name: 'Dammam (DMM)' },
             { code: 'LAX', name: 'Los Angeles (LAX)' },
             { code: 'NRT', name: 'Tokyo Narita (NRT)' },
             { code: 'SIN', name: 'Singapore (SIN)' },
             { code: 'SYD', name: 'Sydney (SYD)' },
             { code: 'YYZ', name: 'Toronto (YYZ)' },
             { code: 'FRA', name: 'Frankfurt (FRA)' },
-            { code: 'MAD', name: 'Madrid (MAD)' }
+            { code: 'MAD', name: 'Madrid (MAD)' },
+            { code: 'AMS', name: 'Amsterdam (AMS)' },
+            { code: 'IST', name: 'Istanbul (IST)' },
+            { code: 'BKK', name: 'Bangkok (BKK)' },
+            { code: 'HKG', name: 'Hong Kong (HKG)' },
+            { code: 'MLE', name: 'Malé (MLE)' },
+            { code: 'CAI', name: 'Cairo (CAI)' }
         ];
 
         function setupAutocomplete(displayId, codeId, dropdownId) {
@@ -72,8 +79,7 @@
             minDate: "today",
             altInput: true,
             altFormat: "F j, Y",
-            showMonths: 2,
-            defaultDate: ["2026-11-05", "2026-11-15"]
+            showMonths: 2
         });
 
         const tripTypeRadios = document.getElementsByName('trip-type');
@@ -382,9 +388,18 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            // Load and populate search bar based on localStorage
+            // Load destination from Explore clicks
+            const destFromExplore = localStorage.getItem('searchDestination');
             const payloadRaw = localStorage.getItem('flightSearchParams');
-            if (payloadRaw) {
+            
+            if (destFromExplore && !payloadRaw) {
+                // Direct from Explore - just pre-fill destination
+                const destCode = destFromExplore.match(/\(([A-Z]+)\)/)?.[1] || '';
+                const destName = destFromExplore.replace(/\s*\([A-Z]+\)/, '');
+                document.getElementById('to-display').value = destName + (destCode ? ` (${destCode})` : '');
+                document.getElementById('to-code').value = destCode;
+            } else if (payloadRaw) {
+                // Has valid search params (from previous search with dates) - populate full form
                 try {
                     const payload = JSON.parse(payloadRaw);
                     
@@ -426,12 +441,15 @@
 
                         // 3. Travel Dates
                         let dates = [payload.slices[0].departure_date];
-                        document.getElementById('outbound-date').value = dates[0];
+                        document.getElementById('outbound-date').value = dates[0] || '';
                         if (payload.slices.length === 2 && payload.slices[1].departure_date) {
                             dates.push(payload.slices[1].departure_date);
                             document.getElementById('return-date').value = dates[1];
                         }
-                        fp.setDate(dates);
+                        // Only set dates if we have valid departure date
+                        if (payload.slices[0].departure_date) {
+                            fp.setDate(dates);
+                        }
                     }
 
                     // 4. Travelers
@@ -472,5 +490,9 @@
                 }
             }
 
-            fetchFlights();
+            // Only auto-fetch if valid date exists in params
+            const hasValidDate = payload && payload.slices && payload.slices[0] && payload.slices[0].departure_date;
+            if (hasValidDate) {
+                fetchFlights();
+            }
         });
