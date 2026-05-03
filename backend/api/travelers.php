@@ -118,7 +118,7 @@ try {
             $id, $userId
         ]);
         
-        echo json_encode(['success' => true]);
+        echo json_encode(['success' => true, 'id' => $id]);
         
     } elseif ($method === 'DELETE') {
         // Delete traveler
