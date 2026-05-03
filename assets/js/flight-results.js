@@ -520,12 +520,7 @@
             const minSlider = document.getElementById('price-min-slider');
             const maxSlider = document.getElementById('price-max-slider');
             const minVal = parseInt(minSlider.value);
-            let maxVal = parseInt(maxSlider.value);
-            
-            if (minVal > maxVal) {
-                maxVal = minVal;
-                maxSlider.value = minVal;
-            }
+            const maxVal = parseInt(maxSlider.value);
             
             filterState.priceMin = minVal;
             filterState.priceMax = maxVal;
@@ -533,25 +528,34 @@
             const display = document.querySelector('.price-range-display');
             if (display) display.textContent = `$${minVal} - $${maxVal}`;
             
+            filterActive = true;
             refreshFlightDisplay();
         }
 
+        function checkAnyFilterActive() {
+            if (filterState.priceMin !== null || filterState.priceMax !== null) return true;
+            if (filterState.stops.nonStop || filterState.stops.oneStop || filterState.stops.twoPlus) return true;
+            if (filterState.departureTime.morning || filterState.departureTime.afternoon || filterState.departureTime.evening) return true;
+            if (filterState.airlines.length > 0) return true;
+            return false;
+        }
+
         function updateStopsFilter(type, checked) {
-            filterActive = true;
             filterState.stops[type] = checked;
+            filterActive = checkAnyFilterActive();
             refreshFlightDisplay();
         }
 
         function updateTimeFilter(type, checked) {
-            filterActive = true;
             filterState.departureTime[type] = checked;
+            filterActive = checkAnyFilterActive();
             refreshFlightDisplay();
         }
 
         function updateAirlinesFilter() {
-            filterActive = true;
             const checkboxes = document.querySelectorAll('.airline-checkbox:checked');
             filterState.airlines = Array.from(checkboxes).map(cb => cb.value);
+            filterActive = checkAnyFilterActive();
             refreshFlightDisplay();
         }
 
