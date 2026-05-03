@@ -504,9 +504,10 @@
             });
             document.getElementById('clear-filters-btn').addEventListener('click', clearAllFilters);
 
-            document.getElementById('sort-select')?.addEventListener('change', e => {
-                filterState.sortBy = e.target.value;
-                refreshFlightDisplay();
+            document.querySelectorAll('.sort-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    setSort(this.dataset.value);
+                });
             });
         }
 
@@ -545,6 +546,14 @@
                 });
             }
             
+            refreshFlightDisplay();
+        };
+
+        window.setSort = function(value) {
+            filterState.sortBy = value;
+            document.querySelectorAll('.sort-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.value === value);
+            });
             refreshFlightDisplay();
         };
 
