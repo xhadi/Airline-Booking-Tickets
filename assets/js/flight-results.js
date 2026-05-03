@@ -333,17 +333,21 @@
         };
 
         function getStopsCount(flight) {
-            const segments = flight.slices[0].segments;
+            const segments = flight.slices?.[0]?.segments;
+            if (!segments || segments.length === 0) return 0;
             return segments.length - 1;
         }
 
         function getDepartureHour(flight) {
-            const departureTime = flight.slices[0].segments[0].departure_time;
-            return new Date(departureTime).getHours();
+            const departureTime = flight.slices?.[0]?.segments?.[0]?.departure_time;
+            if (!departureTime) return 0;
+            const date = new Date(departureTime);
+            return isNaN(date.getTime()) ? 0 : date.getHours();
         }
 
         function getAirlineName(flight) {
-            const firstSegment = flight.slices[0].segments[0];
+            const firstSegment = flight.slices?.[0]?.segments?.[0];
+            if (!firstSegment) return 'Airline';
             return firstSegment.carrier_name || firstSegment.operating_carrier?.name || 'Airline';
         }
 
@@ -357,7 +361,7 @@
 
         function applyFilters(flights) {
             let filtered = flights.filter(flight => {
-                const price = parseFloat(flight.price.total);
+                const price = parseFloat(flight.price?.total) || 0;
 
                 if (filterState.priceMin !== null && price < filterState.priceMin) {
                     return false;
@@ -385,9 +389,9 @@
             });
 
             if (filterState.sortBy === 'cheapest') {
-                filtered.sort((a, b) => parseFloat(a.price.total) - parseFloat(b.price.total));
+                filtered.sort((a, b) => (parseFloat(a.price?.total) || 0) - (parseFloat(b.price?.total) || 0));
             } else if (filterState.sortBy === 'highest') {
-                filtered.sort((a, b) => parseFloat(b.price.total) - parseFloat(a.price.total));
+                filtered.sort((a, b) => (parseFloat(b.price?.total) || 0) - (parseFloat(a.price?.total) || 0));
             }
 
             return filtered;
