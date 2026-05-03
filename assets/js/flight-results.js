@@ -560,8 +560,8 @@
             filterState = {
                 priceMin: null,
                 priceMax: null,
-                stops: { nonStop: true, oneStop: true, twoPlus: true },
-                departureTime: { morning: true, afternoon: true, evening: true },
+                stops: { nonStop: false, oneStop: false, twoPlus: false },
+                departureTime: { morning: false, afternoon: false, evening: false },
                 airlines: [],
                 sortBy: filterState.sortBy
             };
