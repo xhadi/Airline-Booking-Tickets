@@ -397,6 +397,143 @@
             return filtered;
         }
 
+        function renderFilterSidebar() {
+            const sidebar = document.getElementById('filter-sidebar');
+            if (!sidebar || currentFlights.length === 0) return;
+
+            const airlines = getUniqueAirlines(currentFlights);
+            
+            sidebar.innerHTML = `
+                <div class="filter-section">
+                    <div class="filter-title">Price Range</div>
+                    <div class="filter-price-inputs">
+                        <input type="number" class="filter-price-input" id="price-min" placeholder="Min" value="${filterState.priceMin || ''}">
+                        <span class="price-separator">-</span>
+                        <input type="number" class="filter-price-input" id="price-max" placeholder="Max" value="${filterState.priceMax || ''}">
+                    </div>
+                </div>
+
+                <div class="filter-section">
+                    <div class="filter-title">Stops</div>
+                    <label class="filter-checkbox-label">
+                        <input type="checkbox" id="stop-nonstop" ${filterState.stops.nonStop ? 'checked' : ''}>
+                        Non-stop
+                    </label>
+                    <label class="filter-checkbox-label">
+                        <input type="checkbox" id="stop-onestop" ${filterState.stops.oneStop ? 'checked' : ''}>
+                        1 Stop
+                    </label>
+                    <label class="filter-checkbox-label">
+                        <input type="checkbox" id="stop-twoplus" ${filterState.stops.twoPlus ? 'checked' : ''}>
+                        2+ Stops
+                    </label>
+                </div>
+
+                <div class="filter-section">
+                    <div class="filter-title">Departure Time</div>
+                    <label class="filter-checkbox-label">
+                        <input type="checkbox" id="time-morning" ${filterState.departureTime.morning ? 'checked' : ''}>
+                        Morning (6am - 12pm)
+                    </label>
+                    <label class="filter-checkbox-label">
+                        <input type="checkbox" id="time-afternoon" ${filterState.departureTime.afternoon ? 'checked' : ''}>
+                        Afternoon (12pm - 6pm)
+                    </label>
+                    <label class="filter-checkbox-label">
+                        <input type="checkbox" id="time-evening" ${filterState.departureTime.evening ? 'checked' : ''}>
+                        Evening (6pm - 12am)
+                    </label>
+                </div>
+
+                <div class="filter-section">
+                    <div class="filter-title">Airlines</div>
+                    ${airlines.map(airline => `
+                        <label class="filter-checkbox-label">
+                            <input type="checkbox" class="airline-checkbox" value="${airline}" ${filterState.airlines.length === 0 || filterState.airlines.includes(airline) ? 'checked' : ''}>
+                            ${airline}
+                        </label>
+                    `).join('')}
+                </div>
+
+                <button class="filter-clear-btn" id="clear-filters-btn">Clear All Filters</button>
+            `;
+
+            document.getElementById('price-min').addEventListener('input', updatePriceFilter);
+            document.getElementById('price-max').addEventListener('input', updatePriceFilter);
+            document.getElementById('stop-nonstop').addEventListener('change', e => updateStopsFilter('nonStop', e.target.checked));
+            document.getElementById('stop-onestop').addEventListener('change', e => updateStopsFilter('oneStop', e.target.checked));
+            document.getElementById('stop-twoplus').addEventListener('change', e => updateStopsFilter('twoPlus', e.target.checked));
+            document.getElementById('time-morning').addEventListener('change', e => updateTimeFilter('morning', e.target.checked));
+            document.getElementById('time-afternoon').addEventListener('change', e => updateTimeFilter('afternoon', e.target.checked));
+            document.getElementById('time-evening').addEventListener('change', e => updateTimeFilter('evening', e.target.checked));
+            document.querySelectorAll('.airline-checkbox').forEach(cb => {
+                cb.addEventListener('change', updateAirlinesFilter);
+            });
+            document.getElementById('clear-filters-btn').addEventListener('click', clearAllFilters);
+
+        document.getElementById('sort-select')?.addEventListener('change', e => {
+            filterState.sortBy = e.target.value;
+            refreshFlightDisplay();
+        });
+        }
+
+        function updatePriceFilter() {
+            const minInput = document.getElementById('price-min');
+            const maxInput = document.getElementById('price-max');
+            filterState.priceMin = minInput.value ? parseFloat(minInput.value) : null;
+            filterState.priceMax = maxInput.value ? parseFloat(maxInput.value) : null;
+            refreshFlightDisplay();
+        }
+
+        function updateStopsFilter(type, checked) {
+            filterState.stops[type] = checked;
+            refreshFlightDisplay();
+        }
+
+        function updateTimeFilter(type, checked) {
+            filterState.departureTime[type] = checked;
+            refreshFlightDisplay();
+        }
+
+        function updateAirlinesFilter() {
+            const checkboxes = document.querySelectorAll('.airline-checkbox:checked');
+            filterState.airlines = Array.from(checkboxes).map(cb => cb.value);
+            refreshFlightDisplay();
+        }
+
+        function clearAllFilters() {
+            filterState = {
+                priceMin: null,
+                priceMax: null,
+                stops: { nonStop: true, oneStop: true, twoPlus: true },
+                departureTime: { morning: true, afternoon: true, evening: true },
+                airlines: [],
+                sortBy: filterState.sortBy
+            };
+            renderFilterSidebar();
+            refreshFlightDisplay();
+        }
+
+        function refreshFlightDisplay() {
+            const container = document.getElementById('flight-cards-container');
+            const countText = document.getElementById('results-count-text');
+            
+            const filteredFlights = applyFilters(currentFlights);
+            
+            const hasActiveFilters = filterState.priceMin !== null || filterState.priceMax !== null || 
+                !filterState.stops.nonStop || !filterState.stops.oneStop || !filterState.stops.twoPlus ||
+                !filterState.departureTime.morning || !filterState.departureTime.afternoon || !filterState.departureTime.evening ||
+                filterState.airlines.length > 0;
+            
+            if (hasActiveFilters) {
+                countText.innerText = `Found ${currentFlights.length} flights (${filteredFlights.length} after filters)`;
+            } else {
+                countText.innerText = `Found ${currentFlights.length} flights`;
+            }
+
+            container.innerHTML = filteredFlights.map(flight => createFlightCardHTML(flight)).join('');
+        }
+
         function formatDuration(pt) {
             if (!pt) return '';
             let result = '';
@@ -530,6 +667,7 @@
                 }
 
                 container.innerHTML = filteredFlights.map(flight => createFlightCardHTML(flight)).join('');
+                renderFilterSidebar();
                 hideLoadingModal();
             })
             .catch(error => {

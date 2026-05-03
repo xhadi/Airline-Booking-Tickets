@@ -161,9 +161,15 @@
                     <h1 class="results-title">Available Flights</h1>
                     <p class="results-count" id="results-count-text">Found 0 flights</p>
                 </div>
+                <select class="sort-select" id="sort-select">
+                    <option value="cheapest">Cheapest</option>
+                    <option value="highest">Highest Price</option>
+                </select>
             </div>
             
-            <div class="flight-cards-container" id="flight-cards-container">
+            <div class="results-layout">
+                <div class="filter-sidebar" id="filter-sidebar"></div>
+                <div class="flight-cards-container" id="flight-cards-container"></div>
             </div>
         </section>
     </main>
