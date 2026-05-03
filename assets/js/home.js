@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const startRotation = () => {
                 interval = setInterval(() => {
                     showImage((currentIndex + 1) % images.length);
-                }, 1500);
+                }, 2500);
             };
             
             const stopRotation = () => {
