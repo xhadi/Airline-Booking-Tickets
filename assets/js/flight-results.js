@@ -19,6 +19,29 @@
             overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
             document.body.appendChild(overlay);
         }
+
+        function showLoadingModal() {
+            const existing = document.querySelector('.loading-modal-overlay');
+            if (existing) existing.remove();
+            
+            const overlay = document.createElement('div');
+            overlay.className = 'loading-modal-overlay';
+            overlay.innerHTML = `
+                <div class="loading-modal">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-title">Searching Flights</div>
+                    <div class="loading-message">Please wait while we find the best flights for you...</div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            return overlay;
+        }
+
+        function hideLoadingModal() {
+            const existing = document.querySelector('.loading-modal-overlay');
+            if (existing) existing.remove();
+        }
+        }
         
         const airports = [
             { code: 'JFK', name: 'New York (JFK)' },
@@ -206,6 +229,7 @@
             const btn = document.querySelector('.btn-search');
             const ogText = btn.innerText;
             btn.innerText = "Processing...";
+            showLoadingModal();
 
             // Collect Base data
             const tripType = document.querySelector('input[name="trip-type"]:checked').value;
@@ -421,11 +445,13 @@
                 }
 
                 container.innerHTML = currentFlights.map(flight => createFlightCardHTML(flight)).join('');
+                hideLoadingModal();
             })
             .catch(error => {
                 console.error("Fetch error:", error);
                 container.innerHTML = `<div style="text-align:center; padding: 2rem; color: #EF4444;">Failed to fetch flights: ${error.message}</div>`;
                 countText.innerText = 'Error';
+                hideLoadingModal();
             });
         }
 
