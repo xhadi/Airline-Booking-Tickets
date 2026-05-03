@@ -41,7 +41,6 @@
             const existing = document.querySelector('.loading-modal-overlay');
             if (existing) existing.remove();
         }
-        }
         
         const airports = [
             { code: 'JFK', name: 'New York (JFK)' },
