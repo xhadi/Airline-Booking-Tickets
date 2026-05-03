@@ -478,7 +478,7 @@
 
                 <div class="filter-group">
                     <div class="filter-group-title">Airlines</div>
-                    <div class="filter-options airline-options" data-count="${airlines.length}">
+                    <div class="filter-options airline-options">
                         ${airlines.slice(0, 5).map(airline => `
                             <label class="filter-option">
                                 <input type="checkbox" class="airline-checkbox" value="${airline}" ${filterState.airlines.length === 0 || filterState.airlines.includes(airline) ? 'checked' : ''}>
@@ -490,13 +490,27 @@
                     </div>
                 </div>
             `;
-            
-            if (window.airlineExpanded) {
-                addAllAirlines();
-            }
+
+            document.getElementById('price-min-slider').addEventListener('input', updatePriceFilter);
+            document.getElementById('price-max-slider').addEventListener('input', updatePriceFilter);
+            document.querySelectorAll('input[name="stops"]').forEach(radio => {
+                radio.addEventListener('change', e => updateStopsFilter(e.target.value));
+            });
+            document.getElementById('time-morning').addEventListener('change', e => updateTimeFilter('morning', e.target.checked));
+            document.getElementById('time-afternoon').addEventListener('change', e => updateTimeFilter('afternoon', e.target.checked));
+            document.getElementById('time-evening').addEventListener('change', e => updateTimeFilter('evening', e.target.checked));
+            document.querySelectorAll('.airline-checkbox').forEach(cb => {
+                cb.addEventListener('change', updateAirlinesFilter);
+            });
+            document.getElementById('clear-filters-btn').addEventListener('click', clearAllFilters);
+
+            document.getElementById('sort-select')?.addEventListener('change', e => {
+                filterState.sortBy = e.target.value;
+                refreshFlightDisplay();
+            });
         }
 
-        function addAllAirlines() {
+        window.toggleAirlines = function() {
             const container = document.querySelector('.airline-options');
             if (!container) return;
             const airlines = getUniqueAirlines(currentFlights);
@@ -518,32 +532,9 @@
             container.querySelectorAll('.airline-checkbox').forEach(cb => {
                 cb.addEventListener('change', updateAirlinesFilter);
             });
-            window.airlineExpanded = true;
-        }
-
-        function toggleAirlines() {
-            addAllAirlines();
+            
             refreshFlightDisplay();
-        }
-
-            document.getElementById('price-min-slider').addEventListener('input', updatePriceFilter);
-            document.getElementById('price-max-slider').addEventListener('input', updatePriceFilter);
-            document.querySelectorAll('input[name="stops"]').forEach(radio => {
-                radio.addEventListener('change', e => updateStopsFilter(e.target.value));
-            });
-            document.getElementById('time-morning').addEventListener('change', e => updateTimeFilter('morning', e.target.checked));
-            document.getElementById('time-afternoon').addEventListener('change', e => updateTimeFilter('afternoon', e.target.checked));
-            document.getElementById('time-evening').addEventListener('change', e => updateTimeFilter('evening', e.target.checked));
-            document.querySelectorAll('.airline-checkbox').forEach(cb => {
-                cb.addEventListener('change', updateAirlinesFilter);
-            });
-            document.getElementById('clear-filters-btn').addEventListener('click', clearAllFilters);
-
-            document.getElementById('sort-select')?.addEventListener('change', e => {
-                filterState.sortBy = e.target.value;
-                refreshFlightDisplay();
-            });
-        }
+        };
 
         function updatePriceFilter() {
             const minSlider = document.getElementById('price-min-slider');
