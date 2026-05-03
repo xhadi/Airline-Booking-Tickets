@@ -322,13 +322,12 @@
 
         // --- 5. Flight Results Rendering logic ---
         let currentFlights = [];
-        let filterActive = false;
 
         let filterState = {
             priceMin: null,
             priceMax: null,
-            stops: { nonStop: false, oneStop: false, twoPlus: false },
-            departureTime: { morning: false, afternoon: false, evening: false },
+            stops: { nonStop: true, oneStop: true, twoPlus: true },
+            departureTime: { morning: true, afternoon: true, evening: true },
             airlines: [],
             sortBy: 'cheapest'
         };
@@ -361,10 +360,6 @@
         }
 
         function applyFilters(flights) {
-            if (!filterActive) {
-                return flights;
-            }
-
             let filtered = flights.filter(flight => {
                 const price = parseFloat(flight.price?.total) || 0;
 
@@ -516,7 +511,6 @@
         }
 
         function updatePriceFilter() {
-            filterActive = true;
             const minSlider = document.getElementById('price-min-slider');
             const maxSlider = document.getElementById('price-max-slider');
             const minVal = parseInt(minSlider.value);
@@ -528,44 +522,31 @@
             const display = document.querySelector('.price-range-display');
             if (display) display.textContent = `$${minVal} - $${maxVal}`;
             
-            filterActive = true;
             refreshFlightDisplay();
-        }
-
-        function checkAnyFilterActive() {
-            if (filterState.priceMin !== null || filterState.priceMax !== null) return true;
-            if (filterState.stops.nonStop || filterState.stops.oneStop || filterState.stops.twoPlus) return true;
-            if (filterState.departureTime.morning || filterState.departureTime.afternoon || filterState.departureTime.evening) return true;
-            if (filterState.airlines.length > 0) return true;
-            return false;
         }
 
         function updateStopsFilter(type, checked) {
             filterState.stops[type] = checked;
-            filterActive = checkAnyFilterActive();
             refreshFlightDisplay();
         }
 
         function updateTimeFilter(type, checked) {
             filterState.departureTime[type] = checked;
-            filterActive = checkAnyFilterActive();
             refreshFlightDisplay();
         }
 
         function updateAirlinesFilter() {
             const checkboxes = document.querySelectorAll('.airline-checkbox:checked');
             filterState.airlines = Array.from(checkboxes).map(cb => cb.value);
-            filterActive = checkAnyFilterActive();
             refreshFlightDisplay();
         }
 
         function clearAllFilters() {
-            filterActive = false;
             filterState = {
                 priceMin: null,
                 priceMax: null,
-                stops: { nonStop: false, oneStop: false, twoPlus: false },
-                departureTime: { morning: false, afternoon: false, evening: false },
+                stops: { nonStop: true, oneStop: true, twoPlus: true },
+                departureTime: { morning: true, afternoon: true, evening: true },
                 airlines: [],
                 sortBy: filterState.sortBy
             };
