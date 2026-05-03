@@ -401,65 +401,98 @@
             const sidebar = document.getElementById('filter-sidebar');
             if (!sidebar || currentFlights.length === 0) return;
 
+            const prices = currentFlights.map(f => parseFloat(f.price?.total) || 0);
+            const minPrice = Math.min(...prices);
+            const maxPrice = Math.max(...prices);
+            const currentMin = filterState.priceMin ?? minPrice;
+            const currentMax = filterState.priceMax ?? maxPrice;
+
             const airlines = getUniqueAirlines(currentFlights);
             
             sidebar.innerHTML = `
-                <div class="filter-section">
-                    <div class="filter-title">Price Range</div>
-                    <div class="filter-price-inputs">
-                        <input type="number" class="filter-price-input" id="price-min" placeholder="Min" value="${filterState.priceMin || ''}">
-                        <span class="price-separator">-</span>
-                        <input type="number" class="filter-price-input" id="price-max" placeholder="Max" value="${filterState.priceMax || ''}">
+                <div class="filter-header">
+                    <h3 class="filter-header-title">Filters</h3>
+                    <button class="filter-reset-btn" id="clear-filters-btn">Reset</button>
+                </div>
+
+                <div class="filter-group">
+                    <div class="filter-group-title">Price</div>
+                    <div class="price-slider-container">
+                        <div class="price-labels">
+                            <span>$${Math.round(currentMin)}</span>
+                            <span>$${Math.round(currentMax)}</span>
+                        </div>
+                        <div class="slider-track">
+                            <input type="range" class="price-slider" id="price-min-slider" 
+                                min="${Math.floor(minPrice)}" max="${Math.ceil(maxPrice)}" value="${Math.round(currentMin)}">
+                            <input type="range" class="price-slider" id="price-max-slider" 
+                                min="${Math.floor(minPrice)}" max="${Math.ceil(maxPrice)}" value="${Math.round(currentMax)}">
+                        </div>
+                        <div class="price-range-display">$${Math.round(currentMin)} - $${Math.round(currentMax)}</div>
                     </div>
                 </div>
 
-                <div class="filter-section">
-                    <div class="filter-title">Stops</div>
-                    <label class="filter-checkbox-label">
-                        <input type="checkbox" id="stop-nonstop" ${filterState.stops.nonStop ? 'checked' : ''}>
-                        Non-stop
-                    </label>
-                    <label class="filter-checkbox-label">
-                        <input type="checkbox" id="stop-onestop" ${filterState.stops.oneStop ? 'checked' : ''}>
-                        1 Stop
-                    </label>
-                    <label class="filter-checkbox-label">
-                        <input type="checkbox" id="stop-twoplus" ${filterState.stops.twoPlus ? 'checked' : ''}>
-                        2+ Stops
-                    </label>
-                </div>
-
-                <div class="filter-section">
-                    <div class="filter-title">Departure Time</div>
-                    <label class="filter-checkbox-label">
-                        <input type="checkbox" id="time-morning" ${filterState.departureTime.morning ? 'checked' : ''}>
-                        Morning (6am - 12pm)
-                    </label>
-                    <label class="filter-checkbox-label">
-                        <input type="checkbox" id="time-afternoon" ${filterState.departureTime.afternoon ? 'checked' : ''}>
-                        Afternoon (12pm - 6pm)
-                    </label>
-                    <label class="filter-checkbox-label">
-                        <input type="checkbox" id="time-evening" ${filterState.departureTime.evening ? 'checked' : ''}>
-                        Evening (6pm - 12am)
-                    </label>
-                </div>
-
-                <div class="filter-section">
-                    <div class="filter-title">Airlines</div>
-                    ${airlines.map(airline => `
-                        <label class="filter-checkbox-label">
-                            <input type="checkbox" class="airline-checkbox" value="${airline}" ${filterState.airlines.length === 0 || filterState.airlines.includes(airline) ? 'checked' : ''}>
-                            ${airline}
+                <div class="filter-group">
+                    <div class="filter-group-title">Stops</div>
+                    <div class="filter-options">
+                        <label class="filter-option">
+                            <input type="checkbox" id="stop-nonstop" ${filterState.stops.nonStop ? 'checked' : ''}>
+                            <span class="checkmark"></span>
+                            <span>Non-stop</span>
                         </label>
-                    `).join('')}
+                        <label class="filter-option">
+                            <input type="checkbox" id="stop-onestop" ${filterState.stops.oneStop ? 'checked' : ''}>
+                            <span class="checkmark"></span>
+                            <span>1 Stop</span>
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" id="stop-twoplus" ${filterState.stops.twoPlus ? 'checked' : ''}>
+                            <span class="checkmark"></span>
+                            <span>2+ Stops</span>
+                        </label>
+                    </div>
                 </div>
 
-                <button class="filter-clear-btn" id="clear-filters-btn">Clear All Filters</button>
+                <div class="filter-group">
+                    <div class="filter-group-title">Departure Time</div>
+                    <div class="filter-options">
+                        <label class="filter-option">
+                            <input type="checkbox" id="time-morning" ${filterState.departureTime.morning ? 'checked' : ''}>
+                            <span class="checkmark"></span>
+                            <span>Morning</span>
+                            <span class="time-badge">6AM-12PM</span>
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" id="time-afternoon" ${filterState.departureTime.afternoon ? 'checked' : ''}>
+                            <span class="checkmark"></span>
+                            <span>Afternoon</span>
+                            <span class="time-badge">12PM-6PM</span>
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" id="time-evening" ${filterState.departureTime.evening ? 'checked' : ''}>
+                            <span class="checkmark"></span>
+                            <span>Evening</span>
+                            <span class="time-badge">6PM-12AM</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <div class="filter-group-title">Airlines</div>
+                    <div class="filter-options">
+                        ${airlines.map(airline => `
+                            <label class="filter-option">
+                                <input type="checkbox" class="airline-checkbox" value="${airline}" ${filterState.airlines.length === 0 || filterState.airlines.includes(airline) ? 'checked' : ''}>
+                                <span class="checkmark"></span>
+                                <span>${airline}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
             `;
 
-            document.getElementById('price-min').addEventListener('input', updatePriceFilter);
-            document.getElementById('price-max').addEventListener('input', updatePriceFilter);
+            document.getElementById('price-min-slider').addEventListener('input', updatePriceFilter);
+            document.getElementById('price-max-slider').addEventListener('input', updatePriceFilter);
             document.getElementById('stop-nonstop').addEventListener('change', e => updateStopsFilter('nonStop', e.target.checked));
             document.getElementById('stop-onestop').addEventListener('change', e => updateStopsFilter('oneStop', e.target.checked));
             document.getElementById('stop-twoplus').addEventListener('change', e => updateStopsFilter('twoPlus', e.target.checked));
@@ -471,17 +504,29 @@
             });
             document.getElementById('clear-filters-btn').addEventListener('click', clearAllFilters);
 
-        document.getElementById('sort-select')?.addEventListener('change', e => {
-            filterState.sortBy = e.target.value;
-            refreshFlightDisplay();
-        });
+            document.getElementById('sort-select')?.addEventListener('change', e => {
+                filterState.sortBy = e.target.value;
+                refreshFlightDisplay();
+            });
         }
 
         function updatePriceFilter() {
-            const minInput = document.getElementById('price-min');
-            const maxInput = document.getElementById('price-max');
-            filterState.priceMin = minInput.value ? parseFloat(minInput.value) : null;
-            filterState.priceMax = maxInput.value ? parseFloat(maxInput.value) : null;
+            const minSlider = document.getElementById('price-min-slider');
+            const maxSlider = document.getElementById('price-max-slider');
+            const minVal = parseInt(minSlider.value);
+            let maxVal = parseInt(maxSlider.value);
+            
+            if (minVal > maxVal) {
+                maxVal = minVal;
+                maxSlider.value = minVal;
+            }
+            
+            filterState.priceMin = minVal;
+            filterState.priceMax = maxVal;
+            
+            const display = document.querySelector('.price-range-display');
+            if (display) display.textContent = `$${minVal} - $${maxVal}`;
+            
             refreshFlightDisplay();
         }
 
