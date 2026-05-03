@@ -515,23 +515,35 @@
             if (!container) return;
             const airlines = getUniqueAirlines(currentFlights);
             const shown = container.querySelectorAll('.airline-checkbox').length;
-            const remaining = airlines.slice(shown);
             
-            const html = remaining.map(airline => `
-                <label class="filter-option">
-                    <input type="checkbox" class="airline-checkbox" value="${airline}" ${filterState.airlines.length === 0 || filterState.airlines.includes(airline) ? 'checked' : ''}>
-                    <span class="checkmark"></span>
-                    <span>${airline}${filterState.airlines.length === 1 && filterState.airlines[0] === airline ? ' (only)' : ''}</span>
-                </label>
-            `).join('');
-            
-            const btn = container.querySelector('.show-more-btn');
-            if (btn) btn.remove();
-            container.insertAdjacentHTML('beforeend', html);
-            
-            container.querySelectorAll('.airline-checkbox').forEach(cb => {
-                cb.addEventListener('change', updateAirlinesFilter);
-            });
+            if (shown > 5) {
+                // Show less - keep only first 5
+                const checkboxes = container.querySelectorAll('.airline-checkbox');
+                checkboxes.forEach((cb, index) => {
+                    if (index >= 5) cb.parentElement.remove();
+                });
+                const btn = container.querySelector('.show-less-btn');
+                if (btn) btn.remove();
+                container.insertAdjacentHTML('beforeend', `<button class="show-more-btn" onclick="toggleAirlines()">Show more (${airlines.length - 5})</button>`);
+            } else {
+                // Show more
+                const remaining = airlines.slice(5);
+                const html = remaining.map(airline => `
+                    <label class="filter-option">
+                        <input type="checkbox" class="airline-checkbox" value="${airline}" ${filterState.airlines.length === 0 || filterState.airlines.includes(airline) ? 'checked' : ''}>
+                        <span class="checkmark"></span>
+                        <span>${airline}${filterState.airlines.length === 1 && filterState.airlines[0] === airline ? ' (only)' : ''}</span>
+                    </label>
+                `).join('');
+                
+                const btn = container.querySelector('.show-more-btn');
+                if (btn) btn.remove();
+                container.insertAdjacentHTML('beforeend', html + `<button class="show-more-btn show-less-btn" onclick="toggleAirlines()">Show less</button>`);
+                
+                container.querySelectorAll('.airline-checkbox').forEach(cb => {
+                    cb.addEventListener('change', updateAirlinesFilter);
+                });
+            }
             
             refreshFlightDisplay();
         };
