@@ -322,12 +322,13 @@
 
         // --- 5. Flight Results Rendering logic ---
         let currentFlights = [];
+        let filterActive = false;
 
         let filterState = {
             priceMin: null,
             priceMax: null,
-            stops: { nonStop: true, oneStop: true, twoPlus: true },
-            departureTime: { morning: true, afternoon: true, evening: true },
+            stops: { nonStop: false, oneStop: false, twoPlus: false },
+            departureTime: { morning: false, afternoon: false, evening: false },
             airlines: [],
             sortBy: 'cheapest'
         };
@@ -360,6 +361,10 @@
         }
 
         function applyFilters(flights) {
+            if (!filterActive) {
+                return flights;
+            }
+
             let filtered = flights.filter(flight => {
                 const price = parseFloat(flight.price?.total) || 0;
 
@@ -511,6 +516,7 @@
         }
 
         function updatePriceFilter() {
+            filterActive = true;
             const minSlider = document.getElementById('price-min-slider');
             const maxSlider = document.getElementById('price-max-slider');
             const minVal = parseInt(minSlider.value);
@@ -531,22 +537,26 @@
         }
 
         function updateStopsFilter(type, checked) {
+            filterActive = true;
             filterState.stops[type] = checked;
             refreshFlightDisplay();
         }
 
         function updateTimeFilter(type, checked) {
+            filterActive = true;
             filterState.departureTime[type] = checked;
             refreshFlightDisplay();
         }
 
         function updateAirlinesFilter() {
+            filterActive = true;
             const checkboxes = document.querySelectorAll('.airline-checkbox:checked');
             filterState.airlines = Array.from(checkboxes).map(cb => cb.value);
             refreshFlightDisplay();
         }
 
         function clearAllFilters() {
+            filterActive = false;
             filterState = {
                 priceMin: null,
                 priceMax: null,

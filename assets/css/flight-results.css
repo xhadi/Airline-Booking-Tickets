@@ -250,9 +250,28 @@
   padding: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
   flex-shrink: 0;
-  height: fit-content;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
   position: sticky;
   top: 1rem;
+}
+
+.filter-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.filter-sidebar::-webkit-scrollbar-track {
+  background: #F3F4F6;
+  border-radius: 3px;
+}
+
+.filter-sidebar::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 3px;
+}
+
+.filter-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
 }
 
 .filter-header {
