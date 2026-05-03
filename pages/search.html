@@ -54,14 +54,17 @@
             <div class="search-form-container" data-purpose="flight-search-container">
                 <form class="search-form" id="flight-search-form">
                     <div class="trip-type-toggles">
-                        <label class="radio-label">
-                            <input checked class="radio-input" id="type-round-trip" name="trip-type" type="radio" value="round-trip"/>
-                            <span class="radio-text">Round-trip</span>
-                        </label>
-                        <label class="radio-label">
-                            <input class="radio-input" id="type-one-way" name="trip-type" type="radio" value="one-way"/>
-                            <span class="radio-text">One-way</span>
-                        </label>
+                        <div class="trip-type-left">
+                            <label class="radio-label">
+                                <input checked class="radio-input" id="type-round-trip" name="trip-type" type="radio" value="round-trip"/>
+                                <span class="radio-text">Round-trip</span>
+                            </label>
+                            <label class="radio-label">
+                                <input class="radio-input" id="type-one-way" name="trip-type" type="radio" value="one-way"/>
+                                <span class="radio-text">One-way</span>
+                            </label>
+                        </div>
+                        <button type="button" class="btn-clear-search" id="btn-clear-search">Clear</button>
                     </div>
 
                     <div class="search-fields-row">
@@ -145,7 +148,6 @@
 
                         <div class="search-btn-wrapper">
                             <button class="btn-search" type="submit">Search</button>
-                            <button type="button" class="btn-clear" id="btn-clear-search">Clear</button>
                         </div>
                     </div>
                 </form>
