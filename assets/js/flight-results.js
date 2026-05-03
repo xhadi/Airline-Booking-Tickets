@@ -351,6 +351,17 @@
             return firstSegment.carrier_name || firstSegment.operating_carrier?.name || 'Airline';
         }
 
+        function getFlightDuration(flight) {
+            const segments = flight.slices?.[0]?.segments;
+            if (!segments || segments.length === 0) return 0;
+            const firstDep = segments[0].departure_time || segments[0].departing_at;
+            const lastArr = segments[segments.length - 1].arrival_time || segments[segments.length - 1].arriving_at;
+            if (!firstDep || !lastArr) return 0;
+            const depTime = new Date(firstDep).getTime();
+            const arrTime = new Date(lastArr).getTime();
+            return arrTime - depTime;
+        }
+
         function getUniqueAirlines(flights) {
             const airlines = new Set();
             flights.forEach(flight => {
@@ -389,8 +400,8 @@
 
             if (filterState.sortBy === 'cheapest') {
                 filtered.sort((a, b) => (parseFloat(a.price?.total) || 0) - (parseFloat(b.price?.total) || 0));
-            } else if (filterState.sortBy === 'highest') {
-                filtered.sort((a, b) => (parseFloat(b.price?.total) || 0) - (parseFloat(a.price?.total) || 0));
+            } else if (filterState.sortBy === 'fastest') {
+                filtered.sort((a, b) => getFlightDuration(a) - getFlightDuration(b));
             }
 
             return filtered;
