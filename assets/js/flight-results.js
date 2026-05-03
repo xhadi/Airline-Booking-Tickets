@@ -323,6 +323,76 @@
         // --- 5. Flight Results Rendering logic ---
         let currentFlights = [];
 
+        let filterState = {
+            priceMin: null,
+            priceMax: null,
+            stops: { nonStop: true, oneStop: true, twoPlus: true },
+            departureTime: { morning: true, afternoon: true, evening: true },
+            airlines: [],
+            sortBy: 'cheapest'
+        };
+
+        function getStopsCount(flight) {
+            const segments = flight.slices[0].segments;
+            return segments.length - 1;
+        }
+
+        function getDepartureHour(flight) {
+            const departureTime = flight.slices[0].segments[0].departure_time;
+            return new Date(departureTime).getHours();
+        }
+
+        function getAirlineName(flight) {
+            const firstSegment = flight.slices[0].segments[0];
+            return firstSegment.carrier_name || firstSegment.operating_carrier?.name || 'Airline';
+        }
+
+        function getUniqueAirlines(flights) {
+            const airlines = new Set();
+            flights.forEach(flight => {
+                airlines.add(getAirlineName(flight));
+            });
+            return Array.from(airlines).sort();
+        }
+
+        function applyFilters(flights) {
+            let filtered = flights.filter(flight => {
+                const price = parseFloat(flight.price.total);
+
+                if (filterState.priceMin !== null && price < filterState.priceMin) {
+                    return false;
+                }
+                if (filterState.priceMax !== null && price > filterState.priceMax) {
+                    return false;
+                }
+
+                const stops = getStopsCount(flight);
+                if (stops === 0 && !filterState.stops.nonStop) return false;
+                if (stops === 1 && !filterState.stops.oneStop) return false;
+                if (stops >= 2 && !filterState.stops.twoPlus) return false;
+
+                const hour = getDepartureHour(flight);
+                if (hour >= 6 && hour < 12 && !filterState.departureTime.morning) return false;
+                if (hour >= 12 && hour < 18 && !filterState.departureTime.afternoon) return false;
+                if (hour >= 18 && hour < 24 && !filterState.departureTime.evening) return false;
+
+                if (filterState.airlines.length > 0) {
+                    const airline = getAirlineName(flight);
+                    if (!filterState.airlines.includes(airline)) return false;
+                }
+
+                return true;
+            });
+
+            if (filterState.sortBy === 'cheapest') {
+                filtered.sort((a, b) => parseFloat(a.price.total) - parseFloat(b.price.total));
+            } else if (filterState.sortBy === 'highest') {
+                filtered.sort((a, b) => parseFloat(b.price.total) - parseFloat(a.price.total));
+            }
+
+            return filtered;
+        }
+
         function formatDuration(pt) {
             if (!pt) return '';
             let result = '';
@@ -436,14 +506,26 @@
                 }
                 
                 currentFlights = data.flights || [];
-                countText.innerText = `Found ${currentFlights.length} flights`;
+                
+                const hasActiveFilters = filterState.priceMin !== null || filterState.priceMax !== null || 
+                    !filterState.stops.nonStop || !filterState.stops.oneStop || !filterState.stops.twoPlus ||
+                    !filterState.departureTime.morning || !filterState.departureTime.afternoon || !filterState.departureTime.evening ||
+                    filterState.airlines.length > 0;
+                
+                const filteredFlights = applyFilters(currentFlights);
+                
+                if (hasActiveFilters) {
+                    countText.innerText = `Found ${currentFlights.length} flights (${filteredFlights.length} after filters)`;
+                } else {
+                    countText.innerText = `Found ${currentFlights.length} flights`;
+                }
                 
                 if (currentFlights.length === 0) {
                     container.innerHTML = '<div style="text-align:center; padding: 2rem; color: #6B7280;">No flights found for this route and date.</div>';
                     return;
                 }
 
-                container.innerHTML = currentFlights.map(flight => createFlightCardHTML(flight)).join('');
+                container.innerHTML = filteredFlights.map(flight => createFlightCardHTML(flight)).join('');
                 hideLoadingModal();
             })
             .catch(error => {
