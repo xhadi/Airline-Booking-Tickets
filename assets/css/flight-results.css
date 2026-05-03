@@ -438,6 +438,34 @@
   font-weight: bold;
 }
 
+.filter-option input[type="radio"] {
+  display: none;
+}
+
+.filter-option .radio-mark {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #D1D5DB;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.filter-option input[type="radio"]:checked + .radio-mark {
+  border-color: #38BDF8;
+}
+
+.filter-option input[type="radio"]:checked + .radio-mark::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background: #38BDF8;
+  border-radius: 50%;
+}
+
 .time-badge {
   margin-left: auto;
   font-size: 0.7rem;

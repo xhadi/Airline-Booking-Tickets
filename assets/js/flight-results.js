@@ -326,7 +326,7 @@
         let filterState = {
             priceMin: null,
             priceMax: null,
-            stops: { nonStop: true, oneStop: true, twoPlus: true },
+            stops: 'any', // 'any', 'nonstop', '1stop'
             departureTime: { morning: true, afternoon: true, evening: true },
             airlines: [],
             sortBy: 'cheapest'
@@ -371,9 +371,8 @@
                 }
 
                 const stops = getStopsCount(flight);
-                if (stops === 0 && !filterState.stops.nonStop) return false;
-                if (stops === 1 && !filterState.stops.oneStop) return false;
-                if (stops >= 2 && !filterState.stops.twoPlus) return false;
+                if (filterState.stops === 'nonstop' && stops > 0) return false;
+                if (filterState.stops === '1stop' && stops > 1) return false;
 
                 const hour = getDepartureHour(flight);
                 if (hour >= 6 && hour < 12 && !filterState.departureTime.morning) return false;
@@ -436,19 +435,19 @@
                     <div class="filter-group-title">Stops</div>
                     <div class="filter-options">
                         <label class="filter-option">
-                            <input type="checkbox" id="stop-nonstop" ${filterState.stops.nonStop ? 'checked' : ''}>
-                            <span class="checkmark"></span>
-                            <span>Non-stop</span>
+                            <input type="radio" name="stops" value="any" ${filterState.stops === 'any' ? 'checked' : ''}>
+                            <span class="radio-mark"></span>
+                            <span>Any</span>
                         </label>
                         <label class="filter-option">
-                            <input type="checkbox" id="stop-onestop" ${filterState.stops.oneStop ? 'checked' : ''}>
-                            <span class="checkmark"></span>
-                            <span>1 Stop</span>
+                            <input type="radio" name="stops" value="nonstop" ${filterState.stops === 'nonstop' ? 'checked' : ''}>
+                            <span class="radio-mark"></span>
+                            <span>No stops</span>
                         </label>
                         <label class="filter-option">
-                            <input type="checkbox" id="stop-twoplus" ${filterState.stops.twoPlus ? 'checked' : ''}>
-                            <span class="checkmark"></span>
-                            <span>2+ Stops</span>
+                            <input type="radio" name="stops" value="1stop" ${filterState.stops === '1stop' ? 'checked' : ''}>
+                            <span class="radio-mark"></span>
+                            <span>1 stop max</span>
                         </label>
                     </div>
                 </div>
@@ -493,9 +492,9 @@
 
             document.getElementById('price-min-slider').addEventListener('input', updatePriceFilter);
             document.getElementById('price-max-slider').addEventListener('input', updatePriceFilter);
-            document.getElementById('stop-nonstop').addEventListener('change', e => updateStopsFilter('nonStop', e.target.checked));
-            document.getElementById('stop-onestop').addEventListener('change', e => updateStopsFilter('oneStop', e.target.checked));
-            document.getElementById('stop-twoplus').addEventListener('change', e => updateStopsFilter('twoPlus', e.target.checked));
+            document.querySelectorAll('input[name="stops"]').forEach(radio => {
+                radio.addEventListener('change', e => updateStopsFilter(e.target.value));
+            });
             document.getElementById('time-morning').addEventListener('change', e => updateTimeFilter('morning', e.target.checked));
             document.getElementById('time-afternoon').addEventListener('change', e => updateTimeFilter('afternoon', e.target.checked));
             document.getElementById('time-evening').addEventListener('change', e => updateTimeFilter('evening', e.target.checked));
@@ -525,8 +524,8 @@
             refreshFlightDisplay();
         }
 
-        function updateStopsFilter(type, checked) {
-            filterState.stops[type] = checked;
+        function updateStopsFilter(value) {
+            filterState.stops = value;
             refreshFlightDisplay();
         }
 
@@ -545,7 +544,7 @@
             filterState = {
                 priceMin: null,
                 priceMax: null,
-                stops: { nonStop: true, oneStop: true, twoPlus: true },
+                stops: 'any',
                 departureTime: { morning: true, afternoon: true, evening: true },
                 airlines: [],
                 sortBy: filterState.sortBy
