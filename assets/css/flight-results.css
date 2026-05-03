@@ -466,6 +466,22 @@
   border-radius: 50%;
 }
 
+.show-more-btn {
+  background: none;
+  border: none;
+  color: #38BDF8;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  text-align: left;
+}
+
+.show-more-btn:hover {
+  color: #0284C7;
+  text-decoration: underline;
+}
+
 .time-badge {
   margin-left: auto;
   font-size: 0.7rem;
