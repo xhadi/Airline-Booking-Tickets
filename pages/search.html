@@ -161,15 +161,20 @@
                     <h1 class="results-title">Available Flights</h1>
                     <p class="results-count" id="results-count-text">Found 0 flights</p>
                 </div>
-                <div class="sort-tabs">
-                    <button class="sort-tab active" data-value="cheapest" onclick="setSort('cheapest')">Cheapest</button>
-                    <button class="sort-tab" data-value="highest" onclick="setSort('highest')">Highest</button>
-                </div>
             </div>
             
             <div class="results-layout">
                 <div class="filter-sidebar" id="filter-sidebar"></div>
-                <div class="flight-cards-container" id="flight-cards-container"></div>
+                <div class="results-main">
+                    <div class="sort-bar">
+                        <span class="sort-label">Sort by:</span>
+                        <div class="sort-tabs">
+                            <button class="sort-tab active" data-value="cheapest" onclick="setSort('cheapest')">Cheapest</button>
+                            <button class="sort-tab" data-value="highest" onclick="setSort('highest')">Highest</button>
+                        </div>
+                    </div>
+                    <div class="flight-cards-container" id="flight-cards-container"></div>
+                </div>
             </div>
         </section>
     </main>
