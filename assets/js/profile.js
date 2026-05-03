@@ -321,7 +321,7 @@ document.getElementById('btn-add-traveler')?.addEventListener('click', () => {
     showTravelerModal();
 });
 
-function showTravelerModal(travelerId = null) {
+function showTravelerModal(travelerId = null, travelerData = null) {
     // Remove existing modal if any
     const existingModal = document.getElementById('traveler-modal');
     if (existingModal) existingModal.remove();
@@ -358,7 +358,7 @@ function showTravelerModal(travelerId = null) {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Passport Number (optional)</label>
-                        <input type="text" class="form-input" name="passport_number" placeholder="Leave blank if none">
+                        <input type="text" class="form-input" name="passport_number" placeholder="Leave blank to keep existing">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Issuing Country (ISO code, e.g., USA)</label>
@@ -378,6 +378,17 @@ function showTravelerModal(travelerId = null) {
     `;
     
     document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Pre-fill form fields if editing
+    if (travelerData) {
+        const form = document.getElementById('traveler-form');
+        form.first_name.value = travelerData.first_name || '';
+        form.last_name.value = travelerData.last_name || '';
+        form.date_of_birth.value = travelerData.date_of_birth ? travelerData.date_of_birth.split(' ')[0] : '';
+        form.gender.value = travelerData.gender || 'm';
+        form.issuing_country.value = travelerData.issuing_country || '';
+        form.document_expiry.value = travelerData.document_expiry ? travelerData.document_expiry.split(' ')[0] : '';
+    }
     
     // Handle form submission
     document.getElementById('traveler-form').addEventListener('submit', async (e) => {
@@ -440,8 +451,19 @@ async function refreshProfile() {
 }
 
 // Update editTraveler function
-window.editTraveler = function(id) {
-    showToast('Edit functionality coming soon - need to fetch traveler details first');
+window.editTraveler = async function(id) {
+    try {
+        const res = await fetch(`../backend/api/travelers.php?id=${id}`);
+        const data = await res.json();
+        if (data.success && data.travelers && data.travelers.length > 0) {
+            showTravelerModal(id, data.travelers[0]);
+        } else {
+            showToast('Failed to load traveler data');
+        }
+    } catch (err) {
+        console.error(err);
+        showToast('Error loading traveler');
+    }
 };
 
 // Update deleteTraveler function
