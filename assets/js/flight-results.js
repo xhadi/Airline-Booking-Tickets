@@ -563,3 +563,32 @@
                 fetchFlights();
             }
         });
+
+        // Clear Search Button
+        document.getElementById('btn-clear-search')?.addEventListener('click', () => {
+            localStorage.removeItem('flightSearchParams');
+            localStorage.removeItem('searchDestination');
+            document.getElementById('from-display').value = '';
+            document.getElementById('from-code').value = '';
+            document.getElementById('to-display').value = '';
+            document.getElementById('to-code').value = '';
+            document.getElementById('travel-dates').value = '';
+            document.getElementById('outbound-date').value = '';
+            document.getElementById('return-date').value = '';
+            document.getElementById('adults-count').textContent = '1';
+            document.getElementById('adults-input').value = '1';
+            document.getElementById('children-count').textContent = '0';
+            document.getElementById('children-input').value = '0';
+            document.getElementById('travelers-summaryText').textContent = '1 Adult';
+            document.getElementById('cabin-class').value = 'economy';
+            document.getElementById('type-round-trip').checked = true;
+            fp.set('mode', 'range');
+            fp.clear();
+            
+            // Simple toast notification
+            const toast = document.createElement('div');
+            toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#374151;color:white;padding:12px 24px;border-radius:8px;font-size:14px;z-index:4000;';
+            toast.textContent = 'Search cleared';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        });
