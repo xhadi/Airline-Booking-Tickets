@@ -358,11 +358,11 @@ function showTravelerModal(travelerId = null, travelerData = null) {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Passport Number (optional)</label>
-                        <input type="text" class="form-input" name="passport_number" placeholder="Leave blank to keep existing">
+                        <input type="text" class="form-input" name="passport_number" placeholder="${isEdit ? 'Leave blank to keep existing' : 'Optional'}">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Issuing Country (ISO code, e.g., USA)</label>
-                        <input type="text" class="form-input" name="issuing_country" maxlength="3" placeholder="Required">
+                        <input type="text" class="form-input" name="issuing_country" maxlength="3" required placeholder="Required">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Document Expiry</label>
@@ -415,10 +415,12 @@ function showTravelerModal(travelerId = null, travelerData = null) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             });
-            
+
+            if (!res.ok) throw new Error('Request failed');
+
             const data = await res.json();
-            
-            if (data.success || data.id) {
+
+            if (data.success && data.id) {
                 showToast(isEdit ? 'Traveler updated!' : 'Traveler added!');
                 closeTravelerModal();
                 // Refresh profile data
@@ -441,6 +443,7 @@ function closeTravelerModal() {
 async function refreshProfile() {
     try {
         const res = await fetch('../backend/api/profile.php');
+        if (!res.ok) throw new Error('Request failed');
         const data = await res.json();
         if (data.success) {
             renderTravelers(data.travelers || []);
@@ -454,6 +457,7 @@ async function refreshProfile() {
 window.editTraveler = async function(id) {
     try {
         const res = await fetch(`../backend/api/travelers.php?id=${id}`);
+        if (!res.ok) throw new Error('Request failed');
         const data = await res.json();
         if (data.success && data.travelers && data.travelers.length > 0) {
             showTravelerModal(id, data.travelers[0]);
@@ -473,6 +477,7 @@ window.deleteTraveler = async function(id) {
             const res = await fetch(`../backend/api/travelers.php?id=${id}`, {
                 method: 'DELETE'
             });
+            if (!res.ok) throw new Error('Request failed');
             const data = await res.json();
             if (data.success) {
                 showToast('Traveler deleted!');
