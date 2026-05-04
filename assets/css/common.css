@@ -55,8 +55,9 @@ p, h1, h3 { margin: 0; }
 }
 .logo-container, .logo-link { display: flex; align-items: center; }
 .logo-link { gap: 0.5rem; }
-.logo-icon { height: 2rem; width: 2rem; color: #1E40AF; }
-.logo-text { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.025em; color: #1E40AF; text-transform: uppercase; }
+.logo-icon { height: 4rem; width: auto; }
+.logo-text { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.025em; color: #374151; text-transform: uppercase; }
+.logo-sky { color: #1C8BFF; }
 .desktop-nav { display: flex !important; align-items: center; gap: 2rem; visibility: visible !important; opacity: 1 !important; }
 .nav-link { font-size: 1rem; font-weight: 500; color: #374151 !important; transition: color 0.2s; text-decoration: none !important; }
 .nav-link:hover { color: #1E40AF; }
@@ -295,9 +296,9 @@ p, h1, h3 { margin: 0; }
   color: #1E40AF;
   text-decoration: none;
 }
-.auth-brand svg {
-  height: 1.5rem;
-  width: 1.5rem;
+.auth-brand-logo {
+  height: 2.5rem;
+  width: auto;
 }
 .auth-brand span {
   font-size: 1.25rem;

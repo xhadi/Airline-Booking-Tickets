@@ -28,7 +28,7 @@ body { font-family: system-ui, -apple-system, sans-serif; background: #F1F5F9; }
     align-items: center;
     gap: 8px;
 }
-.admin-sidebar-brand svg { width: 24px; height: 24px; color: #38BDF8; }
+.sidebar-logo { height: 2.5rem; width: auto; }
 .admin-sidebar-nav { flex: 1; padding: 8px 0; }
 .sidebar-link {
     display: flex;
@@ -205,7 +205,7 @@ body { font-family: system-ui, -apple-system, sans-serif; background: #F1F5F9; }
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }
 .login-card-header { text-align: center; margin-bottom: 32px; }
-.login-card-header svg { width: 40px; height: 40px; color: #38BDF8; }
+.login-logo { height: 3rem; width: auto; }
 .login-card-header h1 { font-size: 22px; font-weight: 700; color: #1E293B; margin-top: 8px; }
 .login-card-header p { font-size: 14px; color: #64748B; margin-top: 4px; }
 .form-group { margin-bottom: 16px; }
