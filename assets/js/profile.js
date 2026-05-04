@@ -101,6 +101,7 @@ function renderBookings(bookings) {
         }
         
         if (b.status === 'cancelled') return false;
+        if (b.status === 'refunded') return false;
         if (b.status === 'pending') return true;
         if (depTime && depTime > now) return true;
         
@@ -162,6 +163,9 @@ function renderActiveBookings(bookings) {
                         <div>${booking.currency} ${booking.total_price}</div>
                         <div class="passenger-count">${booking.passenger_count} Passenger${booking.passenger_count > 1 ? 's' : ''}</div>
                     </div>
+                </div>
+                <div class="booking-actions" style="text-align:right; margin-top:0.5rem;">
+                    <button class="btn-cancel-flight" onclick="cancelBooking(${booking.id}, '${booking.pnr}', ${booking.total_price}, '${booking.currency}', ${JSON.stringify(booking.flight_snapshot).replace(/"/g, '&quot;')})">Cancel Flight</button>
                 </div>
             </div>
         `;
@@ -254,9 +258,10 @@ function deleteTraveler(id) {
 
 function getStatusColor(status) {
     switch(status.toLowerCase()) {
-        case 'confirmed': return '#10B981';
+        case 'confirmed': return '#00D100';
         case 'pending': return '#F59E0B';
         case 'cancelled': return '#EF4444';
+        case 'refunded': return '#14B8A6';
         default: return '#6B7280';
     }
 }
@@ -266,7 +271,154 @@ function getStatusBg(status) {
         case 'confirmed': return '#D1FAE5';
         case 'pending': return '#FEF3C7';
         case 'cancelled': return '#FEE2E2';
+        case 'refunded': return '#CCFBF1';
         default: return '#F3F4F6';
+    }
+}
+
+async function cancelBooking(bookingId, pnr, totalPrice = 0, currency = 'USD', flightSnapshot = null) {
+    const now = new Date();
+    let origin = '---', destination = '---', depDateStr = '---';
+    let refundPct = 100, penalty = 0, netRefund = 0, daysUntil = 0;
+    
+    if (flightSnapshot && flightSnapshot.slices && flightSnapshot.slices[0] && flightSnapshot.slices[0].segments) {
+        const firstSeg = flightSnapshot.slices[0].segments[0];
+        const lastSeg = flightSnapshot.slices[0].segments[flightSnapshot.slices[0].segments.length - 1];
+        origin = typeof firstSeg.origin === 'object' ? firstSeg.origin.iata_code : firstSeg.origin;
+        destination = typeof lastSeg.destination === 'object' ? lastSeg.destination.iata_code : lastSeg.destination;
+        const depTime = firstSeg.departure_time || firstSeg.departing_at;
+        const depDate = new Date(depTime);
+        depDateStr = depDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+        
+        daysUntil = Math.ceil((depDate - now) / (1000 * 60 * 60 * 24));
+        if (daysUntil >= 7) {
+            refundPct = 100;
+            penalty = 0;
+        } else if (daysUntil >= 3) {
+            refundPct = 50;
+            penalty = totalPrice * 0.5;
+        } else {
+            refundPct = 0;
+            penalty = totalPrice;
+        }
+    }
+    
+    netRefund = totalPrice - penalty;
+    const penaltyDisplay = penalty > 0 ? `-${currency} ${penalty.toFixed(2)}` : `${currency} 0.00`;
+    const netRefundDisplay = netRefund > 0 ? `${currency} ${netRefund.toFixed(2)}` : `${currency} 0.00`;
+    const travelCreditDisplay = netRefund > 0 ? `${currency} ${netRefund.toFixed(2)}` : null;
+    const showTravelCredit = netRefund > 0;
+    const isNoRefund = netRefund === 0;
+    
+    const modalHtml = `
+        <div id="cancel-modal" class="modal-overlay" onclick="event.stopPropagation()">
+            <div class="modal-content" style="max-width: 460px;">
+                <div class="modal-header">
+                    <h3>Cancel Your Flight to ${destination}?</h3>
+                    <button class="modal-close" onclick="closeCancelModal()">✕</button>
+                </div>
+                <div style="padding: 1.5rem;">
+                    <div style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                        <div style="font-size: 0.75rem; color: #64748B; text-transform: uppercase; margin-bottom: 0.5rem;">Flight Details</div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.875rem;">
+                            <span><strong>${origin} → ${destination}</strong></span>
+                            <span style="color: #64748B;">${depDateStr}</span>
+                        </div>
+                        <div style="font-size: 0.875rem; color: #64748B; margin-top: 0.25rem;">Confirmation: ${pnr}</div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="font-size: 0.75rem; color: #64748B; text-transform: uppercase; margin-bottom: 0.75rem;">The Financial Reality</div>
+                        <div style="border: 1px solid #E2E8F0; border-radius: 8px; overflow: hidden;">
+                            <div style="display: flex; justify-content: space-between; padding: 0.75rem 1rem; border-bottom: 1px solid #E2E8F0;">
+                                <span style="color: #374151;">Total Paid</span>
+                                <span style="color: #374151; font-weight: 500;">${currency} ${totalPrice.toFixed(2)}</span>
+                            </div>
+                            ${!isNoRefund ? `
+                            <div style="display: flex; justify-content: space-between; padding: 0.75rem 1rem; border-bottom: 1px solid #E2E8F0; background: #FEF2F2;">
+                                <span style="color: #DC2626;">Cancellation Penalty</span>
+                                <span style="color: #DC2626; font-weight: 500;">${penaltyDisplay}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 0.75rem 1rem; background: #F0FDF4;">
+                                <span style="color: #166534; font-weight: 600;">Net Cash Refund</span>
+                                <span style="color: #166534; font-weight: 700;">${netRefundDisplay}</span>
+                            </div>
+                            ` : `
+                            <div style="display: flex; justify-content: space-between; padding: 0.75rem 1rem; background: #FEF3C7;">
+                                <span style="color: #92400E; font-weight: 600;">No Refund Available</span>
+                                <span style="color: #92400E; font-weight: 700;">${netRefundDisplay}</span>
+                            </div>
+                            `}
+                        </div>
+                        ${!isNoRefund ? '<div style="font-size: 0.75rem; color: #64748B; margin-top: 0.5rem; text-align: right;">Returned to original card in 3-5 days</div>' : `<div style="font-size: 0.75rem; color: #64748B; margin-top: 0.5rem; text-align: right;">Flight departs in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}</div>`}
+                    </div>
+                    
+                    ${showTravelCredit ? `
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="font-size: 0.75rem; color: #64748B; text-transform: uppercase; margin-bottom: 0.75rem;">Convert to Travel Credit</div>
+                        <div style="background: #EFF6FF; border: 1px solid #3B82F6; padding: 1rem; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 0.875rem; color: #1E40AF; margin-bottom: 0.25rem;">Get your refund as travel credit</div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: #2563EB;">${travelCreditDisplay}</div>
+                            <div style="font-size: 0.75rem; color: #3B82F6;">Available immediately for future flights</div>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <div style="display: flex; gap: 1rem; flex-direction: column;">
+                        ${showTravelCredit ? `
+                        <button class="btn-travel-credit" onclick="confirmCancel(${bookingId}, ${totalPrice}, 'credit')">
+                            Claim ${travelCreditDisplay} Travel Credit
+                        </button>
+                        <button class="btn-refund-card" onclick="confirmCancel(${bookingId}, ${totalPrice}, 'refund')">
+                            Refund ${netRefundDisplay} to Card
+                        </button>
+                        ` : isNoRefund ? `
+                        <button class="btn-refund-card" onclick="confirmCancel(${bookingId}, ${totalPrice}, 'refund')" style="background: #FEE2E2; border-color: #FCA5A5;">
+                            Cancel Flight (No Refund)
+                        </button>
+                        ` : `
+                        <button class="btn-refund-card" onclick="confirmCancel(${bookingId}, ${totalPrice}, 'refund')">
+                            Refund ${netRefundDisplay} to Card
+                        </button>
+                        `}
+                    </div>
+                    <button class="btn-keep-flight" onclick="closeCancelModal()" style="width: 100%; margin-top: 0.75rem;">
+                        Keep My Flight
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+function closeCancelModal() {
+    const modal = document.getElementById('cancel-modal');
+    if (modal) modal.remove();
+}
+
+async function confirmCancel(bookingId, totalPrice, refundType = 'refund') {
+    closeCancelModal();
+    
+    try {
+        const res = await fetch('../backend/api/cancel_booking.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ booking_id: bookingId, refund_type: refundType })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+            showToast(data.message || 'Booking cancelled successfully');
+            refreshProfile();
+        } else {
+            showToast(data.error || 'Failed to cancel booking');
+        }
+    } catch (err) {
+        console.error(err);
+        showToast('Error cancelling booking');
     }
 }
 
@@ -313,7 +465,45 @@ document.getElementById('historical-header')?.addEventListener('click', () => {
 
 document.getElementById('btn-save-settings')?.addEventListener('click', async () => {
     const phone = document.getElementById('settings-phone').value;
-    showToast('Settings saved successfully!');
+    const currentPassword = document.getElementById('settings-current-password')?.value || '';
+    const newPassword = document.getElementById('settings-password')?.value || '';
+    const confirmPassword = document.getElementById('settings-confirm-password')?.value || '';
+    
+    if (newPassword !== '' && newPassword.length < 8) {
+        showToast('Password must be at least 8 characters');
+        return;
+    }
+    
+    if (newPassword !== '' && newPassword !== confirmPassword) {
+        showToast('New passwords do not match');
+        return;
+    }
+    
+    try {
+        const res = await fetch('../backend/api/update_settings.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                phone_number: phone,
+                current_password: currentPassword,
+                new_password: newPassword
+            })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+            document.getElementById('settings-current-password').value = '';
+            document.getElementById('settings-password').value = '';
+            document.getElementById('settings-confirm-password').value = '';
+            showToast(data.message || 'Settings saved successfully!');
+        } else {
+            showToast(data.error || 'Failed to save settings');
+        }
+    } catch (err) {
+        console.error(err);
+        showToast('Error saving settings');
+    }
 });
 
 // Add New Traveler button

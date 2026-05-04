@@ -785,3 +785,97 @@
 .btn-submit:hover {
     background: #1D4ED8;
 }
+
+.btn-cancel-flight {
+    padding: 0.5rem 1rem;
+    background: #EF4444;
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-cancel-flight:hover {
+    background: #DC2626;
+}
+
+.btn-confirm-cancel {
+    padding: 0.625rem 1.25rem;
+    background: #EF4444;
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-confirm-cancel:hover {
+    background: #DC2626;
+}
+
+.btn-keep-booking {
+    padding: 0.625rem 1.25rem;
+    background: #F3F4F6;
+    color: #374151;
+    border: 1px solid #D1D5DB;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-keep-booking:hover {
+    background: #E5E7EB;
+}
+
+.btn-travel-credit {
+    width: 100%;
+    padding: 0.875rem 1.5rem;
+    background: #2563EB;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-travel-credit:hover {
+    background: #1D4ED8;
+}
+
+.btn-refund-card {
+    width: 100%;
+    padding: 0.875rem 1.5rem;
+    background: white;
+    color: #374151;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-refund-card:hover {
+    background: #F3F4F6;
+}
+
+.btn-keep-flight {
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    color: #64748B;
+    border: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.btn-keep-flight:hover {
+    color: #374151;
+}
