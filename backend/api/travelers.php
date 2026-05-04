@@ -16,16 +16,29 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 try {
     if ($method === 'GET') {
-        // List all travelers for user
-        $stmt = $pdo->prepare("
-            SELECT id, first_name, last_name, date_of_birth, gender, 
-                   passport_number_encrypted, issuing_country, document_expiry, created_at
-            FROM traveler_profile 
-            WHERE user_id = ? 
-            ORDER BY created_at DESC
-        ");
-        $stmt->execute([$userId]);
-        $travelers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $id = $_GET['id'] ?? null;
+        
+        if ($id) {
+            $stmt = $pdo->prepare("
+                SELECT id, first_name, last_name, date_of_birth, gender, 
+                       passport_number_encrypted, issuing_country, document_expiry, created_at
+                FROM traveler_profile 
+                WHERE id = ? AND user_id = ?
+            ");
+            $stmt->execute([$id, $userId]);
+            $traveler = $stmt->fetch(PDO::FETCH_ASSOC);
+            $travelers = $traveler ? [$traveler] : [];
+        } else {
+            $stmt = $pdo->prepare("
+                SELECT id, first_name, last_name, date_of_birth, gender, 
+                       passport_number_encrypted, issuing_country, document_expiry, created_at
+                FROM traveler_profile 
+                WHERE user_id = ? 
+                ORDER BY created_at DESC
+            ");
+            $stmt->execute([$userId]);
+            $travelers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
         
         // Decrypt passport numbers for display (masked)
         foreach ($travelers as &$t) {
