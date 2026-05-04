@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 desktopNav.innerHTML = `
                     <a class="nav-link" href="${basePath}index.html">Home</a>
                     <a class="nav-link" href="${basePath}pages/search.html">Flights</a>
+                    <a class="nav-link" href="${basePath}pages/reviews.html">Reviews</a>
                     <a class="nav-link" href="#">Contact</a>
                     <a class="nav-link" href="${basePath}pages/profile.html">Profile</a>
                     <a class="nav-link" href="#" id="logout-btn">Logout</a>
@@ -38,6 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 desktopNav.innerHTML = `
                     <a class="nav-link" href="${basePath}index.html">Home</a>
                     <a class="nav-link" href="${basePath}pages/search.html">Flights</a>
+                    <a class="nav-link" href="${basePath}pages/reviews.html">Reviews</a>
                     <a class="nav-link" href="#">Contact</a>
                     <a class="nav-link" href="${basePath}pages/login.html">Login</a>
                 `;

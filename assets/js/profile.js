@@ -207,6 +207,19 @@ function renderHistoricalBookings(bookings) {
         const statusColor = getStatusColor(booking.status);
         const statusBg = getStatusBg(booking.status);
         
+        const isCompleted = booking.status === 'confirmed';
+        const hasExistingReview = booking.has_review;
+        const reviewBtnHtml = isCompleted
+            ? `<button class="btn-write-review" onclick="openReviewForBooking(
+                   ${booking.id}, '${escapeAttr(getRoute(booking.flight_snapshot))}',
+                   '${escapeAttr(getDepartureDate(booking.flight_snapshot))}',
+                   ${hasExistingReview ? 'true' : 'false'},
+                   ${hasExistingReview ? booking.id : 'null'}
+               )">
+               ${hasExistingReview ? '✏️ Edit Review' : '⭐ Write Review'}
+             </button>`
+            : '';
+        
         html += `
             <div class="booking-card" style="border-left: 4px solid ${statusColor};">
                 <div class="booking-top">
@@ -224,6 +237,7 @@ function renderHistoricalBookings(bookings) {
                         <div class="passenger-count">${booking.passenger_count} Passenger${booking.passenger_count > 1 ? 's' : ''}</div>
                     </div>
                 </div>
+                ${reviewBtnHtml ? `<div class="booking-actions" style="text-align:right; margin-top:0.5rem;">${reviewBtnHtml}</div>` : ''}
             </div>
         `;
     });
@@ -681,3 +695,37 @@ window.deleteTraveler = async function(id) {
         }
     }
 };
+
+function escapeAttr(str) {
+    return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+async function openReviewForBooking(bookingId, route, depDate, hasReview, reviewId) {
+    const parts = route.split('→').map(s => s.trim());
+    const origin = parts[0] || '---';
+    const dest = parts[1] || '---';
+
+    const booking = {
+        id: bookingId,
+        origin: origin,
+        dest: dest,
+        depDate: depDate
+    };
+
+    if (hasReview === 'true' && reviewId) {
+        try {
+            const res = await fetch(`../backend/api/reviews.php?booking_id=${bookingId}`);
+            const data = await res.json();
+            if (data.success && data.review) {
+                showReviewModal(booking, data.review);
+            } else {
+                showReviewModal(booking);
+            }
+        } catch (err) {
+            console.error(err);
+            showReviewModal(booking);
+        }
+    } else {
+        showReviewModal(booking);
+    }
+}

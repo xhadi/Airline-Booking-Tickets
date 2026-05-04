@@ -98,3 +98,21 @@ CREATE TABLE webhook_log (
     processed BOOLEAN DEFAULT FALSE,       
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- 7. REVIEW TABLE
+-- Stores platform experience reviews, one per completed booking.
+CREATE TABLE review (
+    id              INT AUTO_INCREMENT PRIMARY KEY,
+    user_id         INT NOT NULL,
+    booking_id      INT NOT NULL UNIQUE,
+    overall_rating  TINYINT NOT NULL CHECK (overall_rating BETWEEN 1 AND 5),
+    ease_of_booking TINYINT NOT NULL CHECK (ease_of_booking BETWEEN 1 AND 5),
+    customer_support TINYINT NOT NULL CHECK (customer_support BETWEEN 1 AND 5),
+    value_for_money TINYINT NOT NULL CHECK (value_for_money BETWEEN 1 AND 5),
+    comment         TEXT NULL,
+    status          ENUM('published','flagged','hidden') NOT NULL DEFAULT 'published',
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (booking_id) REFERENCES booking(id) ON DELETE CASCADE
+);

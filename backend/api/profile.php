@@ -53,7 +53,8 @@ try {
     // Get bookings with passenger count from passenger table
     $stmtBookings = $pdo->prepare("
         SELECT id, pnr, total_price, currency, status, flight_snapshot, created_at,
-               (SELECT COUNT(*) FROM passenger WHERE booking_id = booking.id) AS passenger_count
+               (SELECT COUNT(*) FROM passenger WHERE booking_id = booking.id) AS passenger_count,
+               EXISTS(SELECT 1 FROM review WHERE booking_id = booking.id) AS has_review
         FROM booking WHERE user_id = ? ORDER BY created_at DESC
     ");
     $stmtBookings->execute([$userId]);
@@ -67,8 +68,8 @@ try {
     foreach ($bookings as $key => $b) {
         $totalSpent += (float)$b['total_price'];
         $totalPassengers += (int)$b['passenger_count'];
-        // Decode JSON snapshot for frontend convenience
         $bookings[$key]['flight_snapshot'] = json_decode($b['flight_snapshot'], true);
+        $bookings[$key]['has_review'] = (bool)$b['has_review'];
     }
 
     echo json_encode([

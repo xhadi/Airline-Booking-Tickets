@@ -66,3 +66,51 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Testimonials section - fetch top reviews
+(function loadTestimonials() {
+    try {
+        fetch('backend/api/reviews.php?stats=1')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success || !data.top_reviews || data.top_reviews.length === 0) return;
+
+                const container = document.getElementById('testimonials-container');
+                if (!container) return;
+
+                let html = '';
+                data.top_reviews.forEach(r => {
+                    const initials = (r.first_name[0] + r.last_name[0]).toUpperCase();
+                    const stars = '★'.repeat(r.overall_rating) + '☆'.repeat(5 - r.overall_rating);
+                    const comment = r.comment || 'Great experience with SkyBound!';
+
+                    html += `
+                        <div class="review-card">
+                            <div class="review-card-header">
+                                <div class="review-avatar">${initials}</div>
+                                <div>
+                                    <div class="review-card-name">${r.first_name} ${r.last_name[0]}.</div>
+                                    <div class="review-card-stars">${stars}</div>
+                                </div>
+                            </div>
+                            <p class="review-comment">${escapeTestimonialHtml(comment)}</p>
+                            <div class="review-footer">
+                                <span>${r.user_booking_count} booking${r.user_booking_count !== 1 ? 's' : ''} on SkyBound</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+            })
+            .catch(err => console.error('Failed to load testimonials', err));
+    } catch (err) {
+        console.error('Failed to load testimonials', err);
+    }
+})();
+
+function escapeTestimonialHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = typeof str === 'string' ? str : '';
+    return div.innerHTML;
+}

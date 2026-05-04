@@ -879,3 +879,19 @@
 .btn-keep-flight:hover {
     color: #374151;
 }
+
+/* Review Button */
+.btn-write-review {
+    background: #0284C7;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-write-review:hover {
+    background: #0369A1;
+}
