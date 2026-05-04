@@ -13,7 +13,7 @@ if (!isset($data['email'], $data['password']) || trim($data['email']) === '' || 
 }
 
 $email = trim($data['email']);
-$stmt = $pdo->prepare("SELECT id, first_name, last_name, email, password_hash FROM user WHERE email = ?");
+$stmt = $pdo->prepare("SELECT id, first_name, last_name, email, phone_number, password_hash FROM user WHERE email = ?");
 $stmt->execute([$email]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -22,6 +22,7 @@ if ($user && password_verify($data['password'], $user['password_hash'])) {
     $_SESSION['first_name'] = $user['first_name'];
     $_SESSION['last_name'] = $user['last_name'];
     $_SESSION['email'] = $user['email'];
+    $_SESSION['phone_number'] = $user['phone_number'] ?? '';
     echo json_encode(['success' => true]);
 } else {
     http_response_code(401);
