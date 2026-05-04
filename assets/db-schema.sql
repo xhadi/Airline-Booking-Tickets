@@ -116,3 +116,12 @@ CREATE TABLE review (
     FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
     FOREIGN KEY (booking_id) REFERENCES booking(id) ON DELETE CASCADE
 );
+
+-- 8. ADMIN USERS TABLE
+-- Separate authentication for admin panel. No registration — first admin via manual DB insert.
+CREATE TABLE admin_users (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

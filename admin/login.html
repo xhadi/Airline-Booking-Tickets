@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Admin Login - SkyBound</title>
+    <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body class="login-page">
+    <div class="login-card">
+        <div class="login-card-header">
+            <svg fill="currentColor" viewBox="0 0 24 24">
+                <path d="M21 16.5c0 .38-.21.71-.53.88l-7.97 4.13a1.503 1.503 0 01-1.5 0l-7.97-4.13c-.32-.17-.53-.5-.53-.88V7.5c0-.38.21-.71.53-.88l7.97-4.13a1.503 1.503 0 011.5 0l7.97 4.13c.32.17.53.5.53.88v9z"/>
+            </svg>
+            <h1>SkyBound Admin</h1>
+            <p>Sign in to manage the platform</p>
+        </div>
+        <form id="login-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" class="form-input" placeholder="admin" autocomplete="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" class="form-input" placeholder="••••••••" autocomplete="current-password" required>
+            </div>
+            <button type="submit" class="btn-login" id="btn-login">Sign In</button>
+        </form>
+        <div class="login-error" id="login-error">Invalid credentials</div>
+    </div>
+
+    <script>
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btn-login');
+        const error = document.getElementById('login-error');
+        btn.disabled = true;
+        btn.textContent = 'Signing in...';
+        error.style.display = 'none';
+
+        try {
+            const res = await fetch('../backend/api/admin/login.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: document.getElementById('username').value,
+                    password: document.getElementById('password').value
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                window.location.href = 'dashboard.html';
+            } else {
+                error.textContent = data.error || 'Invalid credentials';
+                error.style.display = 'block';
+            }
+        } catch (err) {
+            error.textContent = 'Connection error';
+            error.style.display = 'block';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Sign In';
+        }
+    });
+    </script>
+</body>
+</html>

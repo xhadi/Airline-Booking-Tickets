@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Bookings - SkyBound Admin</title>
+    <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-sidebar-brand">
+                <svg fill="currentColor" viewBox="0 0 24 24"><path d="M21 16.5c0 .38-.21.71-.53.88l-7.97 4.13a1.503 1.503 0 01-1.5 0l-7.97-4.13c-.32-.17-.53-.5-.53-.88V7.5c0-.38.21-.71.53-.88l7.97-4.13a1.503 1.503 0 011.5 0l7.97 4.13c.32.17.53.5.53.88v9z"/></svg>
+                SkyBound Admin
+            </div>
+            <nav class="admin-sidebar-nav">
+                <a href="dashboard.html" class="sidebar-link" data-page="dashboard"><span class="icon">📊</span> Dashboard</a>
+                <a href="users.html" class="sidebar-link" data-page="users"><span class="icon">👥</span> Users</a>
+                <a href="bookings.html" class="sidebar-link" data-page="bookings"><span class="icon">✈️</span> Bookings</a>
+                <a href="reviews.html" class="sidebar-link" data-page="reviews"><span class="icon">⭐</span> Reviews</a>
+                <a href="transactions.html" class="sidebar-link" data-page="transactions"><span class="icon">💳</span> Transactions</a>
+            </nav>
+            <div class="admin-sidebar-footer">
+                <div class="admin-user" id="admin-username">Admin</div>
+                <button class="btn-logout" onclick="adminLogout()">Logout</button>
+            </div>
+        </aside>
+        <main class="admin-content">
+            <h1 class="admin-page-title">Bookings</h1>
+            <div class="filter-tabs" id="booking-filters">
+                <button class="filter-tab active" data-status="all">All</button>
+                <button class="filter-tab" data-status="confirmed">Confirmed</button>
+                <button class="filter-tab" data-status="pending">Pending</button>
+                <button class="filter-tab" data-status="cancelled">Cancelled</button>
+                <button class="filter-tab" data-status="refunded">Refunded</button>
+            </div>
+            <div class="data-table" id="bookings-table">
+                <div style="padding:20px;text-align:center;color:#64748B;">Loading...</div>
+            </div>
+            <div class="pagination" id="bookings-pagination"></div>
+        </main>
+    </div>
+    <script src="../assets/js/admin.js"></script>
+    <script src="../assets/js/admin-bookings.js"></script>
+</body>
+</html>
