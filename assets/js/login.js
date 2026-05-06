@@ -30,5 +30,10 @@
                 }
             } catch (err) {
                 console.error(err);
+                const errEl = document.getElementById('login-error');
+                if (errEl) {
+                    errEl.textContent = 'Network error. Please check your connection and try again.';
+                    errEl.style.display = 'block';
+                }
             }
         });

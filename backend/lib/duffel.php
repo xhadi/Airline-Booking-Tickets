@@ -53,7 +53,8 @@ class DuffelAPI {
         curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
         curl_setopt($ch, CURLOPT_USERAGENT, 'SkyBound-LocalDev/1.0');
         curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $verifySsl = !(getenv('DUFFEL_ENV') === 'sandbox' && getenv('SKIP_SSL_VERIFY') === 'true');
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $verifySsl);
 
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);

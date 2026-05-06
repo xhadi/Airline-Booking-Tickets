@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <div class="review-card-header">
                                 <div class="review-avatar">${initials}</div>
                                 <div>
-                                    <div class="review-card-name">${r.first_name} ${r.last_name[0]}.</div>
+                                    <div class="review-card-name">${escapeHtml(r.first_name)} ${escapeHtml(r.last_name[0])}.</div>
                                     <div class="review-card-stars">${stars}</div>
                                 </div>
                             </div>
@@ -111,7 +111,15 @@ async function flagReview(reviewId, btn) {
     if (btn.classList.contains('flagged')) return;
 
     try {
-        const res = await fetch(`../backend/api/reviews.php?action=flag&id=${reviewId}`, { method: 'POST' });
+        const tokenRes = await fetch('../backend/api/auth/csrf_token.php');
+        const { csrf_token } = await tokenRes.json();
+
+        const res = await fetch(`../backend/api/reviews.php?action=flag&id=${reviewId}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-Token': csrf_token
+            }
+        });
         const data = await res.json();
         if (data.success) {
             btn.textContent = '🚩 Reported';

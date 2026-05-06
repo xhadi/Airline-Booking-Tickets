@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Search Flights - SkyBound</title>
     
     <!-- Common styles -->
@@ -156,8 +157,8 @@
                     <div class="sort-bar">
                         <span class="sort-label">Sort by:</span>
                         <div class="sort-tabs">
-<button class="sort-tab active" data-value="cheapest" onclick="setSort('cheapest')">Cheapest</button>
-                    <button class="sort-tab" data-value="fastest" onclick="setSort('fastest')">Fastest</button>
+<button class="sort-tab active" data-value="cheapest">Cheapest</button>
+                        <button class="sort-tab" data-value="fastest">Fastest</button>
                         </div>
                     </div>
                     <div class="flight-cards-container" id="flight-cards-container"></div>
@@ -181,7 +182,6 @@
         </div>
     </footer>
 
-    <script src="../assets/js/home.js"></script>
     <script src="../assets/js/flight-results.js"></script>
 <script src="../assets/js/auth.js"></script>
 <script>

@@ -327,7 +327,7 @@
             priceMin: null,
             priceMax: null,
             stops: 'any', // 'any', 'nonstop', '1stop'
-            departureTime: { morning: true, afternoon: true, evening: true },
+            departureTime: { morning: true, afternoon: true, evening: true, early: true },
             airlines: [],
             sortBy: 'cheapest'
         };
@@ -386,6 +386,7 @@
                 if (filterState.stops === '1stop' && stops > 1) return false;
 
                 const hour = getDepartureHour(flight);
+                if (hour < 6 && !filterState.departureTime.early) return false;
                 if (hour >= 6 && hour < 12 && !filterState.departureTime.morning) return false;
                 if (hour >= 12 && hour < 18 && !filterState.departureTime.afternoon) return false;
                 if (hour >= 18 && hour < 24 && !filterState.departureTime.evening) return false;
@@ -467,6 +468,12 @@
                     <div class="filter-group-title">Departure Time</div>
                     <div class="filter-options">
                         <label class="filter-option">
+                            <input type="checkbox" id="time-early" ${filterState.departureTime.early ? 'checked' : ''}>
+                            <span class="checkmark"></span>
+                            <span>Early Morning</span>
+                            <span class="time-badge">12AM-6AM</span>
+                        </label>
+                        <label class="filter-option">
                             <input type="checkbox" id="time-morning" ${filterState.departureTime.morning ? 'checked' : ''}>
                             <span class="checkmark"></span>
                             <span>Morning</span>
@@ -507,6 +514,7 @@
             document.querySelectorAll('input[name="stops"]').forEach(radio => {
                 radio.addEventListener('change', e => updateStopsFilter(e.target.value));
             });
+            document.getElementById('time-early')?.addEventListener('change', e => updateTimeFilter('early', e.target.checked));
             document.getElementById('time-morning').addEventListener('change', e => updateTimeFilter('morning', e.target.checked));
             document.getElementById('time-afternoon').addEventListener('change', e => updateTimeFilter('afternoon', e.target.checked));
             document.getElementById('time-evening').addEventListener('change', e => updateTimeFilter('evening', e.target.checked));
@@ -515,11 +523,14 @@
             });
             document.getElementById('clear-filters-btn').addEventListener('click', clearAllFilters);
 
-            document.querySelectorAll('.sort-tab').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    setSort(this.dataset.value);
+            if (!window._sortTabsListenerAdded) {
+                window._sortTabsListenerAdded = true;
+                document.querySelector('.sort-tabs').addEventListener('click', (e) => {
+                    const tab = e.target.closest('.sort-tab');
+                    if (!tab) return;
+                    setSort(tab.dataset.value);
                 });
-            });
+            }
         }
 
         window.toggleAirlines = function() {
@@ -604,7 +615,7 @@
                 priceMin: null,
                 priceMax: null,
                 stops: 'any',
-                departureTime: { morning: true, afternoon: true, evening: true },
+                departureTime: { morning: true, afternoon: true, evening: true, early: true },
                 airlines: [],
                 sortBy: filterState.sortBy
             };
@@ -619,8 +630,8 @@
             const filteredFlights = applyFilters(currentFlights);
             
             const hasActiveFilters = filterState.priceMin !== null || filterState.priceMax !== null || 
-                !filterState.stops.nonStop || !filterState.stops.oneStop || !filterState.stops.twoPlus ||
-                !filterState.departureTime.morning || !filterState.departureTime.afternoon || !filterState.departureTime.evening ||
+                filterState.stops !== 'any' ||
+                !filterState.departureTime.morning || !filterState.departureTime.afternoon || !filterState.departureTime.evening || !filterState.departureTime.early ||
                 filterState.airlines.length > 0;
             
             if (hasActiveFilters) {
@@ -747,8 +758,8 @@
                 currentFlights = data.flights || [];
                 
                 const hasActiveFilters = filterState.priceMin !== null || filterState.priceMax !== null || 
-                    !filterState.stops.nonStop || !filterState.stops.oneStop || !filterState.stops.twoPlus ||
-                    !filterState.departureTime.morning || !filterState.departureTime.afternoon || !filterState.departureTime.evening ||
+                    filterState.stops !== 'any' ||
+                    !filterState.departureTime.morning || !filterState.departureTime.afternoon || !filterState.departureTime.evening || !filterState.departureTime.early ||
                     filterState.airlines.length > 0;
                 
                 const filteredFlights = applyFilters(currentFlights);
@@ -789,8 +800,9 @@
                 document.getElementById('to-code').value = destCode;
             } else if (payloadRaw) {
                 // Has valid search params (from previous search with dates) - populate full form
+                let payload = null;
                 try {
-                    const payload = JSON.parse(payloadRaw);
+                    payload = JSON.parse(payloadRaw);
                     
                     // 1. Trip Type
                     if (payload.slices && payload.slices.length === 1) {

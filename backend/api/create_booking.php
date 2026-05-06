@@ -18,6 +18,15 @@ try {
         exit;
     }
 
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'PUT' || $_SERVER['REQUEST_METHOD'] === 'DELETE') {
+        $csrf = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['csrf_token'] ?? '';
+        if (!$csrf || !isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $csrf)) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Invalid CSRF token']);
+            exit;
+        }
+    }
+
     $rawInput = file_get_contents('php://input');
     $input = json_decode($rawInput, true);
 
@@ -145,7 +154,7 @@ try {
         'payments' => [
             [
                 'type' => $input['payment']['type'] ?? 'balance',
-                'amount' => number_format($exactTotal, 2, '.', ''),
+                'amount' => (float) number_format($exactTotal, 2, '.', ''),
                 'currency' => $input['payment']['currency'],
             ],
         ],
@@ -227,5 +236,5 @@ try {
 } catch (Exception $e) {
     error_log('Booking error: ' . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['error' => 'Internal server error', 'debug' => $e->getMessage()]);
+    echo json_encode(['error' => 'Internal server error']);
 }

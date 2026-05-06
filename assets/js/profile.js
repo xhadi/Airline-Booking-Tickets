@@ -1,5 +1,9 @@
 document.addEventListener('DOMContentLoaded', async () => {
     try {
+        const csrfRes = await fetch('../backend/api/auth/csrf_token.php');
+        const csrfData = await csrfRes.json();
+        window.csrfToken = csrfData.csrf_token;
+
         const res = await fetch('../backend/api/profile.php');
         if (!res.ok) {
             if (res.status === 401) {
@@ -43,7 +47,7 @@ function renderProfile(data) {
     document.getElementById('stat-flights').textContent = data.stats.total_flights;
     const currency = data.bookings.length > 0 ? data.bookings[0].currency : 'USD';
     document.getElementById('stat-spent').textContent = data.stats.total_spent > 0 ? 
-        `${currency} ${parseFloat(data.stats.total_spent).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : 
+        `${currency} ${(parseFloat(data.stats.total_spent) || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : 
         `${currency} 0`;
     document.getElementById('stat-passengers').textContent = data.stats.total_passengers;
 }
@@ -361,7 +365,7 @@ async function cancelBooking(bookingId, pnr, totalPrice = 0, currency = 'USD', f
                             </div>
                             `}
                         </div>
-                        ${!isNoRefund ? '<div style="font-size: 0.75rem; color: #64748B; margin-top: 0.5rem; text-align: right;">Returned to original card in 3-5 days</div>' : `<div style="font-size: 0.75rem; color: #64748B; margin-top: 0.5rem; text-align: right;">Flight departs in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}</div>`}
+                        ${!isNoRefund ? '<div style="font-size: 0.75rem; color: #64748B; margin-top: 0.5rem; text-align: right;">Returned to original card in 3-5 days</div>' : `<div style="font-size: 0.75rem; color: #64748B; margin-top: 0.5rem; text-align: right;">${daysUntil < 0 ? 'Flight has already departed' : `Flight departs in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}`}</div>`}
                     </div>
                     
                     ${showTravelCredit ? `
@@ -415,7 +419,10 @@ async function confirmCancel(bookingId, totalPrice, refundType = 'refund') {
     try {
         const res = await fetch('../backend/api/cancel_booking.php', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': window.csrfToken
+            },
             body: JSON.stringify({ booking_id: bookingId, refund_type: refundType })
         });
         
@@ -493,7 +500,9 @@ document.getElementById('btn-save-settings')?.addEventListener('click', async ()
     try {
         const res = await fetch('../backend/api/update_settings.php', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'X-CSRF-Token': window.csrfToken
+            },
             body: JSON.stringify({ 
                 phone_number: phone,
                 current_password: currentPassword,
@@ -613,7 +622,10 @@ function showTravelerModal(travelerId = null, travelerData = null) {
             const method = isEdit ? 'PUT' : 'POST';
             const res = await fetch('../backend/api/travelers.php', {
                 method: method,
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': window.csrfToken
+                },
                 body: JSON.stringify(formData)
             });
 
@@ -676,7 +688,10 @@ window.deleteTraveler = async function(id) {
     if (confirm('Are you sure you want to delete this traveler?')) {
         try {
             const res = await fetch(`../backend/api/travelers.php?id=${id}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-Token': window.csrfToken
+                }
             });
             if (!res.ok) throw new Error('Request failed');
             const data = await res.json();

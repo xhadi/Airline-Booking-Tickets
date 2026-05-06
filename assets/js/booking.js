@@ -730,8 +730,6 @@ document.getElementById('booking-form').addEventListener('submit', async functio
     const paxNames = passengers.map(p => p.given_name + p.family_name).join('');
     const idempotencyKey = 'BOOK-' + btoa(flight.id + paxNames + Date.now()).replace(/[^a-zA-Z0-9]/g, '').substring(0, 40);
 
-    const csrfToken = document.getElementById('csrf-token').value;
-
     const submitBtn = document.querySelector('.btn-confirm');
     const originalText = submitBtn.textContent;
     submitBtn.textContent = 'Processing...';
@@ -746,6 +744,7 @@ document.getElementById('booking-form').addEventListener('submit', async functio
             headers: {
                 'Content-Type': 'application/json',
                 'X-Idempotency-Key': idempotencyKey,
+                'X-CSRF-Token': window.csrfToken || '',
             },
             body: JSON.stringify({
                 offer_id: flight.id,
@@ -756,7 +755,6 @@ document.getElementById('booking-form').addEventListener('submit', async functio
                     amount: totalAmount.toFixed(2),
                     currency: currency,
                 },
-                _csrf_token: csrfToken,
             }),
         });
 
@@ -808,7 +806,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(res => res.json())
             .then(data => {
                 if (data.csrf_token) {
-                    document.getElementById('csrf-token').value = data.csrf_token;
+                    window.csrfToken = data.csrf_token;
                 }
             })
             .catch(() => {});

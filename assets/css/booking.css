@@ -201,78 +201,6 @@
   flex: 1 1 100%;
 }
 
-.addons-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-}
-
-.addon-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.875rem 1rem;
-  border: 1px solid #E5E7EB;
-  border-radius: 0.5rem;
-  transition: all 0.2s;
-}
-
-.addon-item:hover {
-  border-color: #D1D5DB;
-  background-color: #F9FAFB;
-}
-
-.addon-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.addon-checkbox {
-  width: 1.125rem;
-  height: 1.125rem;
-  accent-color: #1E40AF;
-}
-
-.addon-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  color: #374151;
-  cursor: pointer;
-}
-
-.addon-icon {
-  font-size: 1.125rem;
-  color: #6B7280;
-}
-
-.addon-price {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #1E40AF;
-}
-
-.addons-selects {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-@media (max-width: 640px) {
-  .addons-selects {
-    grid-template-columns: 1fr;
-  }
-}
-
-.addon-select-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
 .payment-form {
   display: flex;
   flex-direction: column;
@@ -495,11 +423,6 @@
 
 .spinning {
   animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
 .addon-section-title {

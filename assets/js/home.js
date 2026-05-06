@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="review-card-header">
                                 <div class="review-avatar">${initials}</div>
                                 <div>
-                                    <div class="review-card-name">${r.first_name} ${r.last_name[0]}.</div>
+                                    <div class="review-card-name">${escapeTestimonialHtml(r.first_name)} ${escapeTestimonialHtml(r.last_name[0])}.</div>
                                     <div class="review-card-stars">${stars}</div>
                                 </div>
                             </div>

@@ -37,7 +37,7 @@ try {
             JOIN user u ON b.user_id = u.id
             $where
             ORDER BY b.created_at DESC
-            LIMIT $perPage OFFSET $offset
+            LIMIT " . (int)$perPage . " OFFSET " . (int)$offset . "
         ");
         if ($params) $stmt->execute($params); else $stmt->execute();
         $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -73,7 +73,7 @@ try {
             exit;
         }
 
-        $stmt = $pdo->prepare("SELECT id, status FROM booking WHERE id = ?");
+        $stmt = $pdo->prepare("SELECT id, status, total_price, currency FROM booking WHERE id = ?");
         $stmt->execute([$bookingId]);
         $booking = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -91,6 +91,9 @@ try {
 
         $pdo->prepare("UPDATE booking SET status = 'cancelled', cancellation_data = ? WHERE id = ?")
             ->execute([json_encode(['cancelled_by' => 'admin', 'admin_username' => $_SESSION['admin_username']]), $bookingId]);
+
+        $pdo->prepare("INSERT INTO transaction (booking_id, amount, currency, transaction_type, status) VALUES (?, ?, ?, 'refund', 'success')")
+            ->execute([$bookingId, $booking['total_price'], $booking['currency']]);
 
         echo json_encode(['success' => true]);
     }

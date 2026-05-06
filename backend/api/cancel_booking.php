@@ -11,6 +11,16 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $userId = $_SESSION['user_id'];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'PUT' || $_SERVER['REQUEST_METHOD'] === 'DELETE') {
+    $csrf = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['csrf_token'] ?? '';
+    if (!$csrf || !isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $csrf)) {
+        http_response_code(403);
+        echo json_encode(['error' => 'Invalid CSRF token']);
+        exit;
+    }
+}
+
 $input = json_decode(file_get_contents('php://input'), true);
 
 $bookingId = isset($input['booking_id']) ? intval($input['booking_id']) : 0;
@@ -65,7 +75,7 @@ try {
         exit;
     }
 
-    $now = new DateTime();
+    $now = new DateTime('now', new DateTimeZone('UTC'));
     $daysUntil = ceil(($departureDate->getTimestamp() - $now->getTimestamp()) / (86400));
 
     if ($daysUntil < 0) {
@@ -111,18 +121,18 @@ try {
     ");
     $stmtUpdate->execute([$newStatus, $cancellationData, $bookingId]);
 
-    // Log transaction
-    $stmtTrans = $pdo->prepare("
-        INSERT INTO transaction (user_id, booking_id, type, amount, currency, status, details)
-        VALUES (?, ?, 'cancellation', ?, ?, 'completed', ?)
-    ");
-    $stmtTrans->execute([
-        $userId,
-        $bookingId,
-        $refundAmount,
-        $booking['currency'],
-        $cancellationData
-    ]);
+    // Log transaction (skip if no refund amount)
+    if ($refundAmount > 0) {
+        $stmtTrans = $pdo->prepare("
+            INSERT INTO transaction (booking_id, amount, currency, transaction_type, status)
+            VALUES (?, ?, ?, 'refund', 'success')
+        ");
+        $stmtTrans->execute([
+            $bookingId,
+            $refundAmount,
+            $booking['currency']
+        ]);
+    }
 
     $currencySymbol = $booking['currency'] === 'USD' ? '$' : $booking['currency'];
     $refundDisplay = $currencySymbol . number_format($refundAmount, 2);

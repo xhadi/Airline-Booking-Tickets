@@ -151,8 +151,6 @@ body { font-family: system-ui, -apple-system, sans-serif; background: #F1F5F9; }
 
 .badge-cancelled { background: #FEE2E2; color: #991B1B; }
 .badge-refunded { background: #CCFBF1; color: #0F766E; }
-.badge-success { background: #D1FAE5; color: #166534; }
-.badge-failed { background: #FEE2E2; color: #991B1B; }
 .badge-charge { background: #DBEAFE; color: #1E40AF; }
 .badge-refund { background: #FEE2E2; color: #991B1B; }
 
@@ -229,3 +227,20 @@ body { font-family: system-ui, -apple-system, sans-serif; background: #F1F5F9; }
     animation: toastIn 0.3s ease;
 }
 @keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 768px) {
+    .admin-sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+    .admin-content {
+        margin-left: 0;
+    }
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    .data-table {
+        overflow-x: auto;
+    }
+}

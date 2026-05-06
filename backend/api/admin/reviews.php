@@ -30,7 +30,7 @@ try {
             FROM review r JOIN user u ON r.user_id = u.id
             WHERE r.status = ?
             ORDER BY r.updated_at DESC
-            LIMIT $perPage OFFSET $offset
+            LIMIT " . (int)$perPage . " OFFSET " . (int)$offset . "
         ");
         $stmt->execute([$status]);
         $reviews = $stmt->fetchAll(PDO::FETCH_ASSOC);

@@ -33,7 +33,7 @@ try {
         FROM transaction t
         $where
         ORDER BY t.created_at DESC
-        LIMIT $perPage OFFSET $offset
+        LIMIT " . (int)$perPage . " OFFSET " . (int)$offset . "
     ");
     if ($params) $stmt->execute($params); else $stmt->execute();
     $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);

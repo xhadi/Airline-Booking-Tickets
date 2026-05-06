@@ -22,10 +22,6 @@
     cursor: default;
 }
 
-.star-rating-sm .star {
-    font-size: 1rem;
-}
-
 /* --- Review Card (Compact - used on landing page + reviews page) --- */
 .review-card {
     background: #fff;

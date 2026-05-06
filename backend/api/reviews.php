@@ -105,6 +105,15 @@ try {
 
     $userId = $_SESSION['user_id'];
 
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'PUT' || $_SERVER['REQUEST_METHOD'] === 'DELETE') {
+        $csrf = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['csrf_token'] ?? '';
+        if (!$csrf || !isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $csrf)) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Invalid CSRF token']);
+            exit;
+        }
+    }
+
     // --- GET ?booking_id=N — check if booking has a review ---
     if ($method === 'GET' && isset($_GET['booking_id'])) {
         $bookingId = (int)$_GET['booking_id'];

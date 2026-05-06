@@ -54,7 +54,7 @@ function showReviewModal(booking, existingReview = null) {
                         </div>
                         <div style="margin-top: 16px;">
                             <label class="rating-label" style="display:block;margin-bottom:6px;">Comment (optional)</label>
-                            <textarea class="comment-area" id="review-comment" placeholder="Share your experience...">${escapeHtml(existingReview ? (existingReview.comment || '') : '')}</textarea>
+                            <textarea class="comment-area" id="review-comment" placeholder="Share your experience..."></textarea>
                         </div>
                         <div class="modal-actions">
                             <button class="btn-cancel" onclick="closeReviewModal()">Cancel</button>
@@ -70,6 +70,10 @@ function showReviewModal(booking, existingReview = null) {
     `;
 
     document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    if (existingReview && existingReview.comment) {
+        document.getElementById('review-comment').textContent = existingReview.comment;
+    }
 
     document.querySelectorAll('#review-modal .star-rating').forEach(ratingEl => {
         const stars = ratingEl.querySelectorAll('.star');
@@ -133,6 +137,10 @@ async function submitReview(bookingId, isEdit, reviewId) {
 
     try {
         const method = isEdit === 'true' ? 'PUT' : 'POST';
+        const basePath = isRoot ? '' : '../';
+        const tokenRes = await fetch(`${basePath}backend/api/auth/csrf_token.php`);
+        const { csrf_token } = await tokenRes.json();
+
         let url = `${basePath}backend/api/reviews.php`;
         if (isEdit === 'true' && reviewId) {
             url += `?id=${reviewId}`;
@@ -140,7 +148,10 @@ async function submitReview(bookingId, isEdit, reviewId) {
 
         const res = await fetch(url, {
             method,
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': csrf_token
+            },
             body: JSON.stringify({
                 booking_id: bookingId,
                 overall_rating: ratings.overall,
