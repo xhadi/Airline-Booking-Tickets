@@ -15,18 +15,6 @@ a { text-decoration: none; }
 button, input, select { font-family: inherit; }
 p, h1, h3 { margin: 0; }
 
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
-
 /* Layout Utilities */
 .container {
   width: 100%;
@@ -58,7 +46,7 @@ p, h1, h3 { margin: 0; }
 .logo-icon { height: 4rem; width: auto; }
 .logo-text { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.025em; color: #374151; text-transform: uppercase; }
 .logo-sky { color: #1C8BFF; }
-.desktop-nav { display: flex !important; align-items: center; gap: 2rem; visibility: visible !important; opacity: 1 !important; }
+.desktop-nav { display: flex; align-items: center; gap: 2rem; }
 .nav-link { font-size: 1rem; font-weight: 500; color: #374151 !important; transition: color 0.2s; text-decoration: none !important; }
 .nav-link:hover { color: #1E40AF; }
 
