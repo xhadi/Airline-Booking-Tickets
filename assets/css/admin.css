@@ -148,7 +148,7 @@ body { font-family: system-ui, -apple-system, sans-serif; background: #F1F5F9; }
     font-size: 12px; font-weight: 600;
 }
 .badge-confirmed { background: #D1FAE5; color: #166534; }
-.badge-pending { background: #FEF3C7; color: #92400E; }
+
 .badge-cancelled { background: #FEE2E2; color: #991B1B; }
 .badge-refunded { background: #CCFBF1; color: #0F766E; }
 .badge-success { background: #D1FAE5; color: #166534; }

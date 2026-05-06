@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td>${b.user_name}</td>
                         <td><span class="badge ${badgeClass}">${b.status}</span></td>
                         <td>${b.currency} ${parseFloat(b.total_price).toFixed(2)}</td>
-                        <td>${(b.status === 'confirmed' || b.status === 'pending')
+                        <td>${(b.status === 'confirmed')
                             ? `<button class="btn-cancel-booking" onclick="cancelBooking(${b.id})">Cancel</button>`
                             : ''}</td>
                     </tr>

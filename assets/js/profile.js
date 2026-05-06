@@ -102,7 +102,6 @@ function renderBookings(bookings) {
         
         if (b.status === 'cancelled') return false;
         if (b.status === 'refunded') return false;
-        if (b.status === 'pending') return true;
         if (depTime && depTime > now) return true;
         
         return false;
@@ -273,7 +272,6 @@ function deleteTraveler(id) {
 function getStatusColor(status) {
     switch(status.toLowerCase()) {
         case 'confirmed': return '#00D100';
-        case 'pending': return '#F59E0B';
         case 'cancelled': return '#EF4444';
         case 'refunded': return '#14B8A6';
         default: return '#6B7280';
@@ -283,7 +281,6 @@ function getStatusColor(status) {
 function getStatusBg(status) {
     switch(status.toLowerCase()) {
         case 'confirmed': return '#D1FAE5';
-        case 'pending': return '#FEF3C7';
         case 'cancelled': return '#FEE2E2';
         case 'refunded': return '#CCFBF1';
         default: return '#F3F4F6';

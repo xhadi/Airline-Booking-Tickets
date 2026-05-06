@@ -79,8 +79,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 let pagHtml = '';
                 if (totalPages > 1) {
-                    for (let i = 1; i <= totalPages; i++) {
+                    const blockSize = 10;
+                    const currentBlock = Math.ceil(currentPage / blockSize);
+                    const blockStart = (currentBlock - 1) * blockSize + 1;
+                    const blockEnd = Math.min(blockStart + blockSize - 1, totalPages);
+
+                    if (currentBlock > 1) {
+                        pagHtml += `<button onclick="loadReviews(${blockStart - 1})">&#8249;</button>`;
+                    }
+
+                    for (let i = blockStart; i <= blockEnd; i++) {
                         pagHtml += `<button class="${i === currentPage ? 'active' : ''}" onclick="loadReviews(${i})">${i}</button>`;
+                    }
+
+                    if (blockEnd < totalPages) {
+                        pagHtml += `<button onclick="loadReviews(${blockEnd + 1})">&#8250;</button>`;
                     }
                 }
                 pagination.innerHTML = pagHtml;

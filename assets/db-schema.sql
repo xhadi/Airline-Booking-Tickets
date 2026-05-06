@@ -41,7 +41,7 @@ CREATE TABLE booking (
     duffel_order_id VARCHAR(255) UNIQUE,   
     total_price DECIMAL(10, 2) NOT NULL,   
     currency VARCHAR(10) NOT NULL,         
-    status ENUM('pending', 'confirmed', 'cancelled', 'failed', 'refunded') DEFAULT 'pending',
+    status ENUM('confirmed', 'cancelled', 'failed', 'refunded') DEFAULT 'confirmed',
     flight_snapshot JSON NOT NULL,         -- Stores the immutable flight details at time of purchase
     passenger_count INT NOT NULL DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -83,23 +83,12 @@ CREATE TABLE transaction (
     amount DECIMAL(10, 2) NOT NULL,
     currency VARCHAR(10) NOT NULL,
     transaction_type ENUM('charge', 'refund') NOT NULL,
-    status ENUM('pending', 'success', 'failed') NOT NULL,
+    status ENUM('success', 'failed') NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (booking_id) REFERENCES booking(id) ON DELETE CASCADE
 );
 
--- 6. WEBHOOK LOG TABLE
--- Handles asynchronous state changes from the airline/Duffel.
-CREATE TABLE webhook_log (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    event_type VARCHAR(100) NOT NULL,      
-    duffel_event_id VARCHAR(255) UNIQUE NOT NULL,
-    payload JSON NOT NULL,                 
-    processed BOOLEAN DEFAULT FALSE,       
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- 7. REVIEW TABLE
+-- 6. REVIEW TABLE
 -- Stores platform experience reviews, one per completed booking.
 CREATE TABLE review (
     id              INT AUTO_INCREMENT PRIMARY KEY,
@@ -117,7 +106,7 @@ CREATE TABLE review (
     FOREIGN KEY (booking_id) REFERENCES booking(id) ON DELETE CASCADE
 );
 
--- 8. ADMIN USERS TABLE
+-- 7. ADMIN USERS TABLE
 -- Separate authentication for admin panel. No registration — first admin via manual DB insert.
 CREATE TABLE admin_users (
     id INT PRIMARY KEY AUTO_INCREMENT,

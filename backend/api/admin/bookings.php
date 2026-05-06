@@ -83,9 +83,9 @@ try {
             exit;
         }
 
-        if (!in_array($booking['status'], ['confirmed', 'pending'])) {
+        if (!in_array($booking['status'], ['confirmed'])) {
             http_response_code(400);
-            echo json_encode(['error' => 'Only confirmed or pending bookings can be cancelled']);
+            echo json_encode(['error' => 'Only confirmed bookings can be cancelled']);
             exit;
         }
 
