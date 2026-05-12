@@ -1,9 +1,9 @@
 <?php
 // backend/lib/encryption.php
 function encryptData($data) {
-    $keyEnv = getenv('ENCRYPTION_KEY');
+    $keyEnv = getenv('ENCRYPTION_KEY') ?: (defined('ENCRYPTION_KEY') ? ENCRYPTION_KEY : null);
     if (!$keyEnv) {
-        throw new \RuntimeException('ENCRYPTION_KEY environment variable is not set');
+        throw new \RuntimeException('ENCRYPTION_KEY environment variable or constant is not set');
     }
     $key = base64_decode($keyEnv, true);
     if ($key === false || strlen($key) !== 32) {
@@ -18,9 +18,9 @@ function encryptData($data) {
 }
 
 function decryptData($encrypted) {
-    $keyEnv = getenv('ENCRYPTION_KEY');
+    $keyEnv = getenv('ENCRYPTION_KEY') ?: (defined('ENCRYPTION_KEY') ? ENCRYPTION_KEY : null);
     if (!$keyEnv) {
-        throw new \RuntimeException('ENCRYPTION_KEY environment variable is not set');
+        throw new \RuntimeException('ENCRYPTION_KEY environment variable or constant is not set');
     }
     $key = base64_decode($keyEnv, true);
     if ($key === false || strlen($key) !== 32) {
